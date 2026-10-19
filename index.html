@@ -11,7 +11,6 @@
       --glass-bg: rgba(15, 23, 42, 0.78);
       --glass-card: rgba(30, 41, 59, 0.65);
       --glass-border: rgba(255, 255, 255, 0.12);
-      --glass-highlight: rgba(56, 189, 248, 0.28);
       --text-primary: #f8fafc;
       --text-secondary: #cbd5e1;
       --text-muted: #94a3b8;
@@ -53,7 +52,7 @@
       background: #060b14;
     }
 
-    /* 頂部懸浮式玻璃導航列 (留白與呼吸感設計) */
+    /* 頂部懸浮式玻璃導航列 */
     .top-floating-nav {
       position: absolute;
       top: 20px;
@@ -105,7 +104,7 @@
       letter-spacing: 0.3px;
     }
 
-    /* 四大戰情分頁切換器 (Segmented Tabs) */
+    /* 四大戰情分頁切換器 */
     .view-tabs {
       display: flex;
       background: rgba(9, 14, 26, 0.65);
@@ -190,12 +189,12 @@
       color: #052e16;
     }
 
-    /* 懸浮式分頁內容容器 (每次只優雅呈現一個主題面板，保留 75% 以上地圖視野) */
+    /* 懸浮式分頁內容容器 */
     .stage-panel {
       position: absolute;
       top: 108px;
       left: 24px;
-      width: 420px;
+      width: 410px;
       max-height: calc(100vh - 190px);
       overflow-y: auto;
       background: var(--glass-bg);
@@ -216,7 +215,81 @@
       display: flex;
     }
 
-    /* 甘特圖專用底部寬幅懸浮面板 (僅在分頁4或展開時顯示) */
+    /* 右上角懸浮式「車輛與設施圖例說明卡」(Legend Card) */
+    .floating-legend-card {
+      position: absolute;
+      top: 108px;
+      right: 24px;
+      width: 285px;
+      background: var(--glass-bg);
+      backdrop-filter: blur(20px) saturate(160%);
+      -webkit-backdrop-filter: blur(20px) saturate(160%);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-soft);
+      padding: 16px 18px;
+      z-index: 800;
+      transition: all 0.25s ease;
+    }
+
+    .floating-legend-card.minimized {
+      width: 155px;
+      padding: 10px 14px;
+    }
+
+    .floating-legend-card.minimized .legend-body {
+      display: none;
+    }
+
+    .legend-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--accent-sky);
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .legend-body {
+      margin-top: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      padding-top: 12px;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 12px;
+      color: var(--text-secondary);
+      line-height: 1.35;
+    }
+
+    .legend-icon-wrap {
+      width: 34px;
+      height: 34px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      border: 1.5px solid rgba(255, 255, 255, 0.75);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+    }
+
+    .legend-line-sample {
+      width: 34px;
+      height: 8px;
+      border-radius: 4px;
+      flex-shrink: 0;
+    }
+
+    /* 甘特圖專用底部寬幅懸浮面板 */
     .gantt-stage-panel {
       position: absolute;
       bottom: 84px;
@@ -418,7 +491,7 @@
       to { background-position: 48px 0; }
     }
 
-    /* 底部中央懸浮控制膠囊：空間快速定位 + 動畫速度控制 */
+    /* 底部中央懸浮控制膠囊 */
     .bottom-floating-dock {
       position: absolute;
       bottom: 20px;
@@ -480,39 +553,82 @@
       border-color: rgba(56, 189, 248, 0.45);
     }
 
-    /* 地圖上優雅的動態列車與運碴車膠囊 (附帶即時文字說明，不再只是看不懂的小圓點) */
-    .vehicle-pill {
-      display: inline-flex;
+    /* =======================================================================
+       地圖上的擬真小車子 SVG 標記 (Vehicle Graphic Marker + 微型狀態浮標)
+       ======================================================================= */
+    .vehicle-unit {
+      display: flex;
+      flex-direction: column;
       align-items: center;
-      gap: 7px;
-      padding: 5px 12px;
-      border-radius: 99px;
-      font-size: 12px;
-      font-weight: 700;
-      white-space: nowrap;
-      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.65);
-      border: 1.5px solid rgba(255, 255, 255, 0.85);
-      backdrop-filter: blur(8px);
-      transition: transform 0.1s linear;
       pointer-events: auto;
+      cursor: pointer;
+      filter: drop-shadow(0 6px 14px rgba(0, 0, 0, 0.75));
+      transition: transform 0.15s ease;
     }
 
-    .vehicle-pill-pax {
-      background: rgba(2, 132, 199, 0.92);
-      color: #fff;
+    .vehicle-unit:hover {
+      transform: scale(1.12);
+      z-index: 9999 !important;
     }
 
-    .vehicle-pill-spoil {
-      background: rgba(234, 179, 8, 0.95);
-      color: #090d16;
+    .vehicle-Chassis {
+      width: 40px;
+      height: 40px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 2px solid #ffffff;
+      position: relative;
+    }
+
+    .chassis-pax-south {
+      background: linear-gradient(135deg, #0284c7, #0369a1);
+      box-shadow: 0 0 16px rgba(56, 189, 248, 0.65);
+    }
+
+    .chassis-pax-north {
+      background: linear-gradient(135deg, #06b6d4, #0e7490);
+      box-shadow: 0 0 16px rgba(6, 182, 212, 0.65);
+    }
+
+    .chassis-spoil-train {
+      background: linear-gradient(135deg, #eab308, #ca8a04);
       border-color: #fef08a;
+      box-shadow: 0 0 18px rgba(234, 179, 8, 0.75);
     }
 
-    .vehicle-pill-truck {
-      background: rgba(249, 115, 22, 0.92);
-      color: #fff;
-      font-size: 11.5px;
-      padding: 4px 10px;
+    .chassis-spoil-truck {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, #f97316, #ea580c);
+      border-color: #fed7aa;
+      box-shadow: 0 0 16px rgba(249, 115, 22, 0.75);
+    }
+
+    .vehicle-caption {
+      margin-top: 4px;
+      background: rgba(9, 14, 26, 0.9);
+      backdrop-filter: blur(6px);
+      color: #f8fafc;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 99px;
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      white-space: nowrap;
+      letter-spacing: 0.2px;
+    }
+
+    .caption-amber {
+      border-color: #fde047;
+      color: #fef08a;
+    }
+
+    .caption-orange {
+      border-color: #fdba74;
+      color: #ffedd5;
     }
 
     /* 地圖工區地標卡片式標籤 */
@@ -598,7 +714,7 @@
       background: rgba(56, 189, 248, 0.2) !important;
     }
 
-    /* 模態框 (Google Space GAS 部署指南) */
+    /* 模態框 */
     .modal-backdrop {
       position: fixed;
       inset: 0;
@@ -639,7 +755,6 @@
       white-space: pre;
     }
 
-    /* 滾動條美化 */
     ::-webkit-scrollbar { width: 6px; height: 6px; }
     ::-webkit-scrollbar-track { background: transparent; }
     ::-webkit-scrollbar-thumb { background: rgba(148, 163, 184, 0.3); border-radius: 99px; }
@@ -650,7 +765,7 @@
   <!-- 全幅 Google Map 底圖 -->
   <div id="map"></div>
 
-  <!-- 頂部懸浮式玻璃導航列：分為 4 大清晰主題分頁 -->
+  <!-- 頂部懸浮式玻璃導航列 -->
   <header class="top-floating-nav">
     <div class="brand-area">
       <div class="brand-icon">🛤️</div>
@@ -660,7 +775,6 @@
       </div>
     </div>
 
-    <!-- 4 大主題分頁 (不把所有面板擠在同一個畫面) -->
     <nav class="view-tabs">
       <button class="view-tab active" id="tab-overview" onclick="switchTab('overview')">
         <span>🗺️</span> 1. 工區總覽與鋼便橋
@@ -684,7 +798,79 @@
   </header>
 
   <!-- =====================================================================
-       分頁 ①：工區總覽與臨時鋼便橋配置 (預設開啟，畫面清爽寬敞)
+       右上角懸浮式「車輛圖示與工程圖例說明卡」(Legend Card)
+       ===================================================================== -->
+  <div class="floating-legend-card" id="legend-card">
+    <div class="legend-header" onclick="toggleLegendCard()">
+      <span>🎨 車輛圖示與路線圖例說明</span>
+      <span id="legend-toggle-icon" style="font-size:11px; color:var(--text-muted);">收合 ▲</span>
+    </div>
+
+    <div class="legend-body">
+      <!-- 1. 臺鐵南下/北上客運列車小圖案 -->
+      <div class="legend-item">
+        <div class="legend-icon-wrap" style="background:linear-gradient(135deg,#0284c7,#0369a1);">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="#ffffff">
+            <path d="M12 2c-4.42 0-8 .5-8 4v9.5C4 17.43 5.57 19 7.5 19L6 20.5v.5h12v-.5L16.5 19c1.93 0 3.5-1.57 3.5-3.5V6c0-3.5-3.58-4-8-4zM7.5 17c-.83 0-1.5-.67-1.5-1.5S6.67 14 7.5 14s1.5.67 1.5 1.5S8.33 17 7.5 17zm3.5-6H6V6h5v5zm2 0V6h5v5h-5zm3.5 6c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/>
+          </svg>
+        </div>
+        <div>
+          <strong style="color:#fff;">臺鐵營運客運列車</strong><br>
+          <span>平日單線於和仁6~9股/崇德4~7股待避交會；假日雙線運行</span>
+        </div>
+      </div>
+
+      <!-- 2. 蘇花安運碴專列 (12平車工程車頭) -->
+      <div class="legend-item">
+        <div class="legend-icon-wrap" style="background:linear-gradient(135deg,#eab308,#ca8a04); border-color:#fef08a;">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="#090d16">
+            <path d="M4 15.5C4 17.43 5.57 19 7.5 19L6 20.5v.5h12v-.5L16.5 19c1.93 0 3.5-1.57 3.5-3.5V8h-16v7.5zm3.5 1.5c-.83 0-1.5-.67-1.5-1.5S6.67 14 7.5 14s1.5.67 1.5 1.5S8.33 17 7.5 17zm9 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zM3 6h18v1.5H3V6zm3-3l3-1.5 3 1.5 3-1.5 3 1.5v2H6V3z"/>
+          </svg>
+        </div>
+        <div>
+          <strong style="color:#fde047;">蘇花安運碴專列 (12輛平車)</strong><br>
+          <span>和仁站裝土 ➔ 崇德站第1股卸載(1hr)；第2股夜間留置空車</span>
+        </div>
+      </div>
+
+      <!-- 3. 蘇花安運土砂石卡車 (傾卸卡車小圖案) -->
+      <div class="legend-item">
+        <div class="legend-icon-wrap" style="background:linear-gradient(135deg,#f97316,#ea580c); border-color:#fed7aa;">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="#ffffff">
+            <path d="M20 8h-3V4H3c-1.1 0-2 .9-2 2v11h2c0 1.66 1.34 3 3 3s3-1.34 3-3h6c0 1.66 1.34 3 3 3s3-1.34 3-3h2v-5l-3-4zM6 18.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm13.5-9l1.96 2.5H17V9.5h2.5zm-1.5 9c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/>
+          </svg>
+        </div>
+        <div>
+          <strong style="color:#fdba74;">蘇花安運碴砂石卡車隊</strong><br>
+          <span>初期走站內南下便道穿農路箱涵；中期走跨鐵路便橋/5號橋</span>
+        </div>
+      </div>
+
+      <!-- 4. 軌道與便道線條圖例 -->
+      <div class="legend-item">
+        <div class="legend-line-sample" style="background:#10b981;"></div>
+        <div><strong style="color:#6ee7b7;">營運通行正線軌道</strong>（單線雙向或假日雙線）</div>
+      </div>
+
+      <div class="legend-item">
+        <div class="legend-line-sample" style="background:repeating-linear-gradient(90deg,#f97316 0,#f97316 8px,transparent 8px,transparent 14px);"></div>
+        <div><strong style="color:#fdba74;">封鎖施工中正線工區</strong>（滑模推進/托軌橫移）</div>
+      </div>
+
+      <div class="legend-item">
+        <div class="legend-line-sample" style="background:repeating-linear-gradient(90deg,#38bdf8 0,#38bdf8 6px,transparent 6px,transparent 10px);"></div>
+        <div><strong style="color:#7dd3fc;">海側施工便道 & 70m/50m/30m 鋼便橋</strong></div>
+      </div>
+
+      <div class="legend-item">
+        <div class="legend-line-sample" style="background:rgba(244,63,94,0.45); border:1px dashed #f43f5e;"></div>
+        <div><strong style="color:#fda4af;">落石崩滑高潛勢區 & 56K+990 電子圍籬</strong></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- =====================================================================
+       分頁 ①：工區總覽與臨時鋼便橋配置
        ===================================================================== -->
   <aside class="stage-panel active" id="panel-overview">
     <div class="panel-header">
@@ -775,7 +961,6 @@
       </button>
     </div>
 
-    <!-- 雙軌動態視覺指示器 -->
     <div class="track-visual-box">
       <div style="display:flex; justify-content:space-between; font-size:12px; color:var(--text-muted);">
         <span>⬅ 北上 (往和仁站 6~9 股待避)</span>
@@ -857,7 +1042,7 @@
   </aside>
 
   <!-- =====================================================================
-       分頁 ④：117～125 年監造工作進度甘特圖聯動面板 (僅在分頁4展開)
+       分頁 ④：117～125 年監造工作進度甘特圖聯動面板
        ===================================================================== -->
   <section class="gantt-stage-panel" id="panel-gantt">
     <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px;">
@@ -885,7 +1070,7 @@
   </section>
 
   <!-- =====================================================================
-       底部中央懸浮控制膠囊 (空間快速導航 + 動畫慢速/暫停控制器)
+       底部中央懸浮控制膠囊
        ===================================================================== -->
   <div class="bottom-floating-dock">
     <div class="dock-group">
@@ -916,7 +1101,7 @@
         <button class="pill-btn" onclick="toggleGasModal(false)">✕ 關閉視窗</button>
       </div>
       <p style="font-size:13.5px; color:var(--text-secondary);">
-        本互動網頁採用單一檔案無相依架構，已自動保存在您工作區的 <code>gas_webapp/index.html</code> 與 <code>gas_webapp/Code.gs</code>：
+        本互動網頁已發布於公開聯外網址：<a href="https://ahowhow.github.io/tra-k53-k56-warroom/" target="_blank" style="color:#38bdf8; font-weight:700;">https://ahowhow.github.io/tra-k53-k56-warroom/</a>，同時亦可貼入 Google Apps Script：
       </p>
       <div class="code-block">function doGet(e) {
   return HtmlService.createHtmlOutputFromFile('index')
@@ -924,18 +1109,13 @@
     .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL)
     .addMetaTag('viewport', 'width=device-width, initial-scale=1.0');
 }</div>
-      <ol style="font-size:13px; color:var(--text-secondary); padding-left:20px; margin-top:10px;">
-        <li>開啟 <a href="https://script.google.com" target="_blank" style="color:var(--accent-sky);">script.google.com</a> 建立新專案，貼上上方 <code>Code.gs</code>。</li>
-        <li>新增名為 <code>index</code> 的 HTML 檔案，將 <code>gas_webapp/index.html</code> 貼入。</li>
-        <li>點選右上角「部署」➔「新增部署作業」➔「網頁應用程式」，即可取得專屬互動網址貼入 Google Space！</li>
-      </ol>
     </div>
   </div>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script>
     // =========================================================================
-    // 1. 初始化全幅 Google Maps 底圖 (預設將視野中心微調，避開左側懸浮卡片)
+    // 1. 初始化全幅 Google Maps 底圖
     // =========================================================================
     const map = L.map('map', {
       center: [24.1810, 121.6515],
@@ -958,8 +1138,15 @@
       document.getElementById('btn-map-terrain').classList.toggle('active', mode === 'terrain');
     }
 
+    function toggleLegendCard() {
+      const card = document.getElementById('legend-card');
+      const icon = document.getElementById('legend-toggle-icon');
+      card.classList.toggle('minimized');
+      icon.innerText = card.classList.contains('minimized') ? '展開 ▼' : '收合 ▲';
+    }
+
     // =========================================================================
-    // 2. 四大戰情分頁切換邏輯 (不把所有面板擠在一起，切換分頁自動帶領鏡頭)
+    // 2. 四大戰情分頁切換邏輯
     // =========================================================================
     function switchTab(tabId) {
       ['overview', 'tracks', 'spoil', 'gantt'].forEach(id => {
@@ -971,7 +1158,6 @@
       document.getElementById('panel-spoil').classList.toggle('active', tabId === 'spoil');
       document.getElementById('panel-gantt').classList.toggle('active', tabId === 'gantt');
 
-      // 根據分頁自動平滑切換最佳觀賞視角
       if (tabId === 'overview') {
         focusLocation('K56_NORTH');
       } else if (tabId === 'tracks') {
@@ -984,22 +1170,22 @@
     }
 
     // =========================================================================
-    // 3. 空間座標定義 (和仁站 ~ K53 ~ K56 ~ 崇德站)
+    // 3. 空間座標定義
     // =========================================================================
     const COORDS = {
       HEREN_STATION: [24.2448, 121.6712],
       QINGSHUI_S: [24.2008, 121.6635],
       K53_BRIDGE: [24.1986, 121.6632],
       CHONGDE_N: [24.1965, 121.6629],
-      CHONGDE_S: [24.1846, 121.6552],      // STA 56+440
-      BRIDGE_2: [24.1828, 121.6548],       // K56+620 崇德二號橋
-      DRAIN_56K816: [24.1806, 121.6544],   // 56K+816 洩水槽分界
-      BRIDGE_4: [24.1790, 121.6541],       // 崇德四號橋
-      EFENCE: [24.1780, 121.6539],         // 56K+990 電子圍籬
-      K57_050: [24.1773, 121.6538],        // STA 57+050 假隧道南端
-      BRIDGE_5: [24.1762, 121.6536],       // 崇德五號橋下海灘便道
-      CHONGDE_OLD: [24.1695, 121.6524],    // 崇德站第1/2股卸碴與4~7股待避
-      CHONGDE_NEW: [24.1678, 121.6521],    // 新建崇德跨站式車站
+      CHONGDE_S: [24.1846, 121.6552],
+      BRIDGE_2: [24.1828, 121.6548],
+      DRAIN_56K816: [24.1806, 121.6544],
+      BRIDGE_4: [24.1790, 121.6541],
+      EFENCE: [24.1780, 121.6539],
+      K57_050: [24.1773, 121.6538],
+      BRIDGE_5: [24.1762, 121.6536],
+      CHONGDE_OLD: [24.1695, 121.6524],
+      CHONGDE_NEW: [24.1678, 121.6521],
       SUHUA_FILL: [24.1635, 121.6548]
     };
 
@@ -1022,11 +1208,9 @@
 
     const eastTrackCoords = westTrackCoords.map(p => [p[0], p[1] + 0.00038]);
 
-    // 繪製西正線與東正線
     const westLine = L.polyline(westTrackCoords, { color: '#10b981', weight: 6, opacity: 0.9 }).addTo(map);
     const eastLine = L.polyline(eastTrackCoords, { color: '#f97316', weight: 6, dashArray: '10, 8', opacity: 0.9 }).addTo(map);
 
-    // 繪製東施工便道 (含排樁与 70m/30m 鋼便橋) 與西施工便道 (50m/30m 鋼便橋)
     L.polyline([
       [24.1846, 121.6562],
       [24.1828, 121.6558],
@@ -1037,7 +1221,6 @@
       .bindTooltip('🛣️ 海側東施工便道 (含 Φ1.5m 排樁、70M & 30M 鋼便橋、五號橋下100m備援便道)')
       .addTo(map);
 
-    // 繪製西側高風險崩塌斜坡範圍 (柔和半透明紅)
     L.polygon([
       [24.1848, 121.6485],
       [24.1848, 121.6534],
@@ -1047,7 +1230,6 @@
       .bindTooltip('⚠️ K56 西側峭壁落石與岩屑崩滑高潛勢區 (15°斜坡頂版+廢輪胎緩衝防護)')
       .addTo(map);
 
-    // 蘇花安運土卡車初期與中期路線
     const truckRouteInitial = [
       [24.1695, 121.6518],
       [24.1668, 121.6514],
@@ -1070,7 +1252,6 @@
       color: '#eab308', weight: 5, dashArray: '8, 6', opacity: 0.9
     }).addTo(map);
 
-    // 精選地標標籤 (間距拉開，不重疊)
     function addLandmark(latlng, text, cls, targetZone) {
       L.marker(latlng, {
         icon: L.divIcon({
@@ -1100,11 +1281,79 @@
     }
 
     // =========================================================================
-    // 4. 慢速、具敘事感的列車與運碴車動態引擎 (附帶即時文字膠囊，一眼看懂在做什麼)
+    // 4. 擬真車子小圖案 SVG 建立與慢速動畫引擎
+    // // WHY: 使用高辨識度的車頭/工程專列/傾卸砂石車 SVG 圖案取代純文字框，搭配下方精簡微型標籤與右上角圖例說明卡。
     // =========================================================================
+    const SVG_TRAIN_PAX = `
+      <svg viewBox="0 0 24 24" width="22" height="22" fill="#ffffff">
+        <path d="M12 2c-4.42 0-8 .5-8 4v9.5C4 17.43 5.57 19 7.5 19L6 20.5v.5h12v-.5L16.5 19c1.93 0 3.5-1.57 3.5-3.5V6c0-3.5-3.58-4-8-4zM7.5 17c-.83 0-1.5-.67-1.5-1.5S6.67 14 7.5 14s1.5.67 1.5 1.5S8.33 17 7.5 17zm3.5-6H6V6h5v5zm2 0V6h5v5h-5zm3.5 6c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/>
+      </svg>`;
+
+    const SVG_TRAIN_SPOIL = `
+      <svg viewBox="0 0 24 24" width="22" height="22" fill="#090d16">
+        <path d="M4 15.5C4 17.43 5.57 19 7.5 19L6 20.5v.5h12v-.5L16.5 19c1.93 0 3.5-1.57 3.5-3.5V8h-16v7.5zm3.5 1.5c-.83 0-1.5-.67-1.5-1.5S6.67 14 7.5 14s1.5.67 1.5 1.5S8.33 17 7.5 17zm9 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zM3 6h18v1.5H3V6zm3-3l3-1.5 3 1.5 3-1.5 3 1.5v2H6V3z"/>
+      </svg>`;
+
+    const SVG_TRUCK_SPOIL = `
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="#ffffff">
+        <path d="M20 8h-3V4H3c-1.1 0-2 .9-2 2v11h2c0 1.66 1.34 3 3 3s3-1.34 3-3h6c0 1.66 1.34 3 3 3s3-1.34 3-3h2v-5l-3-4zM6 18.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm13.5-9l1.96 2.5H17V9.5h2.5zm-1.5 9c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/>
+      </svg>`;
+
+    const southTrainMarker = L.marker(COORDS.CHONGDE_S, {
+      icon: L.divIcon({
+        className: '',
+        html: `
+          <div class="vehicle-unit" title="臺鐵南下營運列車">
+            <div class="vehicle-Chassis chassis-pax-south">${SVG_TRAIN_PAX}</div>
+            <div class="vehicle-caption" id="pill-south-train">南下客車｜西線單線</div>
+          </div>`,
+        iconSize: [110, 62],
+        iconAnchor: [55, 22]
+      })
+    }).addTo(map);
+
+    const northTrainMarker = L.marker(COORDS.CHONGDE_OLD, {
+      icon: L.divIcon({
+        className: '',
+        html: `
+          <div class="vehicle-unit" title="臺鐵北上營運列車">
+            <div class="vehicle-Chassis chassis-pax-north">${SVG_TRAIN_PAX}</div>
+            <div class="vehicle-caption" id="pill-north-train">北上客車｜崇德4~7股待避</div>
+          </div>`,
+        iconSize: [120, 62],
+        iconAnchor: [60, 22]
+      })
+    }).addTo(map);
+
+    const spoilTrainMarker = L.marker(COORDS.CHONGDE_OLD, {
+      icon: L.divIcon({
+        className: '',
+        html: `
+          <div class="vehicle-unit" title="蘇花安運碴專列 (12輛平車編組)">
+            <div class="vehicle-Chassis chassis-spoil-train">${SVG_TRAIN_SPOIL}</div>
+            <div class="vehicle-caption caption-amber" id="pill-spoil-train">運碴專列(12平車)</div>
+          </div>`,
+        iconSize: [120, 62],
+        iconAnchor: [60, 22]
+      })
+    }).addTo(map);
+
+    const spoilTruckMarker = L.marker(COORDS.CHONGDE_OLD, {
+      icon: L.divIcon({
+        className: '',
+        html: `
+          <div class="vehicle-unit" title="蘇花安運土砂石卡車隊">
+            <div class="vehicle-Chassis chassis-spoil-truck">${SVG_TRUCK_SPOIL}</div>
+            <div class="vehicle-caption caption-orange" id="pill-spoil-truck">運碴卡車｜初期箱涵動線</div>
+          </div>`,
+        iconSize: [110, 58],
+        iconAnchor: [55, 20]
+      })
+    }).addTo(map);
+
     let currentOpMode = 'WEEKDAY_EAST';
     let currentSpoilMode = 'INITIAL';
-    let speedMultiplier = 1; // 0 = 暫停, 0.5 = 慢速, 1 = 標準舒適, 2 = 加速
+    let speedMultiplier = 1;
 
     function setAnimSpeed(spd) {
       speedMultiplier = spd;
@@ -1196,43 +1445,8 @@
       ];
     }
 
-    // 建立帶有文字說明的動態膠囊標記
-    const southTrainMarker = L.marker(COORDS.CHONGDE_S, {
-      icon: L.divIcon({
-        className: '',
-        html: '<div class="vehicle-pill vehicle-pill-pax" id="pill-south-train">🚄 南下客車｜西正線通行中</div>',
-        iconAnchor: [70, 14]
-      })
-    }).addTo(map);
-
-    const northTrainMarker = L.marker(COORDS.CHONGDE_OLD, {
-      icon: L.divIcon({
-        className: '',
-        html: '<div class="vehicle-pill vehicle-pill-pax" id="pill-north-train">🚄 北上客車｜崇德4~7股待避</div>',
-        iconAnchor: [70, 14]
-      })
-    }).addTo(map);
-
-    const spoilTrainMarker = L.marker(COORDS.CHONGDE_OLD, {
-      icon: L.divIcon({
-        className: '',
-        html: '<div class="vehicle-pill vehicle-pill-spoil" id="pill-spoil-train">🪨 蘇花安運碴專列 (12平車)</div>',
-        iconAnchor: [80, 14]
-      })
-    }).addTo(map);
-
-    const spoilTruckMarker = L.marker(COORDS.CHONGDE_OLD, {
-      icon: L.divIcon({
-        className: '',
-        html: '<div class="vehicle-pill vehicle-pill-truck" id="pill-spoil-truck">🚛 運碴卡車隊｜往蘇花安便道</div>',
-        iconAnchor: [75, 12]
-      })
-    }).addTo(map);
-
-    // 慢速且平滑的動畫迴圈 (比前一版放慢 6 倍，可清楚觀察交會與裝卸)
-    let masterClock = 0.42; // 初始直接從 K56 路段中央開始，方便打開網頁就看到列車
+    let masterClock = 0.42;
     function animateScene() {
-      // 基準步進 0.00035 (約 48 秒走完全程，從容優雅)
       masterClock += 0.00035 * speedMultiplier;
       const cycle = masterClock % 1;
 
@@ -1245,9 +1459,9 @@
         southTrainMarker.setLatLng(COORDS.HEREN_STATION);
         northTrainMarker.setLatLng(COORDS.CHONGDE_NEW);
         spoilTrainMarker.setLatLng([24.1695, 121.6520]);
-        if (southEl) southEl.innerText = '🌙 夜間封鎖｜客車停駛';
-        if (northEl) northEl.innerText = '🏗️ 崇德站跨軌鋼構夜間吊裝中';
-        if (spoilEl) spoilEl.innerText = '🪨 空平車夜間留置崇德站第2股';
+        if (southEl) southEl.innerText = '夜間封鎖｜客車停駛';
+        if (northEl) northEl.innerText = '崇德站夜間鋼構吊裝';
+        if (spoilEl) spoilEl.innerText = '空車留置崇德第2股';
       } else {
         const southTrack = (currentOpMode === 'WEEKDAY_EAST') ? westTrackCoords : eastTrackCoords;
         const northTrack = (currentOpMode === 'WEEKDAY_WEST') ? eastTrackCoords : westTrackCoords;
@@ -1256,27 +1470,25 @@
         let northT = 1 - ((cycle + 0.45) % 1);
 
         if (currentOpMode !== 'HOLIDAY_DUAL') {
-          // 平日單線雙向：當南下客車行經 K53~K56 單線區間 (0.25~0.78) 時，北上客車優雅停靠崇德站 4~7 股待避
           if (southT > 0.25 && southT < 0.78) {
             northT = 0.85;
-            if (northEl) northEl.innerText = '🚄 北上客車｜於崇德站4~7股待避交會';
+            if (northEl) northEl.innerText = '北上｜崇德4~7股待避';
           } else {
-            if (northEl) northEl.innerText = '🚄 北上客車｜單線區間北上通行中';
+            if (northEl) northEl.innerText = '北上｜單線區間通行';
           }
           if (southEl) {
             southEl.innerText = (currentOpMode === 'WEEKDAY_EAST')
-              ? '🚄 南下客車｜西正線單線運行'
-              : '🚄 南下客車｜東正線新隧道運行';
+              ? '南下｜西正線單線通行'
+              : '南下｜東正線新隧道通行';
           }
         } else {
-          if (southEl) southEl.innerText = '🚄 南下客車｜假日雙線(托軌承載)';
-          if (northEl) northEl.innerText = '🚄 北上客車｜假日雙線全速運行';
+          if (southEl) southEl.innerText = '南下｜假日雙線(托軌)';
+          if (northEl) northEl.innerText = '北上｜假日雙線運行';
         }
 
         southTrainMarker.setLatLng(interpolatePath(southTrack, southT));
         northTrainMarker.setLatLng(interpolatePath(northTrack, northT));
 
-        // 蘇花安運碴列車 (和仁站 <-> 崇德站第1股)
         const spoilTrack = (currentOpMode === 'WEEKDAY_WEST') ? eastTrackCoords : westTrackCoords;
         const pingPong = Math.abs(((cycle * 1.4) % 2) - 1);
         const spoilT = Math.min(0.86, Math.max(0.02, pingPong));
@@ -1284,26 +1496,25 @@
 
         if (spoilEl) {
           if (spoilT > 0.80) {
-            spoilEl.innerText = '🪨 運碴專列｜崇德站第1股卸櫃中 (1hr)';
+            spoilEl.innerText = '運碴專列｜崇德第1股卸櫃(1hr)';
             document.getElementById('spoil-live-badge').innerText = '崇德站第1股卸櫃中';
           } else if (spoilT < 0.08) {
-            spoilEl.innerText = '🪨 運碴專列｜和仁站裝載土石 (12平車)';
+            spoilEl.innerText = '運碴專列｜和仁站裝土(12平車)';
             document.getElementById('spoil-live-badge').innerText = '和仁站裝載中';
           } else {
-            spoilEl.innerText = '🪨 蘇花安運碴專列｜南運往崇德第1股';
+            spoilEl.innerText = '運碴專列｜南運往崇德第1股';
             document.getElementById('spoil-live-badge').innerText = '鐵路南運進行中';
           }
         }
       }
 
-      // 運碴卡車沿初期或中期路線慢速行駛
       const activeTruckPath = (currentSpoilMode === 'INITIAL') ? truckRouteInitial : truckRouteMidterm;
       const truckT = (masterClock * 2.2) % 1;
       spoilTruckMarker.setLatLng(interpolatePath(activeTruckPath, truckT));
       if (truckEl) {
         truckEl.innerText = (currentSpoilMode === 'INITIAL')
-          ? '🚛 運碴卡車｜初期：經農路箱涵轉運'
-          : '🚛 運碴卡車｜中期：經跨鐵路便橋轉運';
+          ? '運碴卡車｜初期箱涵動線'
+          : '運碴卡車｜中期跨鐵路便橋';
       }
 
       requestAnimationFrame(animateScene);
@@ -1311,7 +1522,7 @@
     requestAnimationFrame(animateScene);
 
     // =========================================================================
-    // 5. 117~125 年甘特圖動態聯動 (圖 2.7-4)
+    // 5. 117~125 年甘特圖動態聯動
     // =========================================================================
     const YEARS = [117, 118, 119, 120, 121, 122, 123, 124, 125];
     const GANTT_TASKS = [
@@ -1414,8 +1625,8 @@
       document.getElementById('gas-modal').classList.toggle('open', open);
     }
 
-    // 預設初始化為 119年 Q1
     onQuarterChange(8);
   </script>
 </body>
 </html>
+
