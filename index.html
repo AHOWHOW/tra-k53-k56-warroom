@@ -639,6 +639,38 @@
     .landmark-pin.pin-violet { border-left-color: var(--accent-violet); }
     .landmark-pin.pin-rose { border-left-color: var(--accent-rose); }
 
+    /* 路線上直接標示之 70m / 50m / 30m 鋼便橋膠囊標籤 */
+    .bridge-onroute-pill {
+      background: linear-gradient(135deg, rgba(2, 132, 199, 0.96), rgba(15, 23, 42, 0.96));
+      border: 1.5px solid #7dd3fc;
+      color: #ffffff;
+      padding: 3px 9px;
+      border-radius: 99px;
+      font-size: 11px;
+      font-weight: 700;
+      white-space: nowrap;
+      box-shadow: 0 0 14px rgba(56, 189, 248, 0.8);
+      cursor: pointer;
+      transition: transform 0.15s ease;
+    }
+
+    .bridge-onroute-pill:hover {
+      transform: scale(1.1);
+      border-color: #fde047;
+    }
+
+    .legend-item.clickable {
+      cursor: pointer;
+      padding: 4px 6px;
+      margin: -4px -6px;
+      border-radius: 8px;
+      transition: background 0.15s ease;
+    }
+
+    .legend-item.clickable:hover {
+      background: rgba(56, 189, 248, 0.16);
+    }
+
     .gantt-scroll-area {
       flex: 1;
       overflow: auto;
@@ -778,12 +810,12 @@
   <!-- 右上角懸浮式「車輛圖示與路線圖例說明卡」 -->
   <div class="floating-legend-card" id="legend-card">
     <div class="legend-header" onclick="toggleLegendCard()">
-      <span>🎨 車輛圖示與會車圖例說明</span>
+      <span>🎨 車輛圖示與路線圖例 (點擊定位)</span>
       <span id="legend-toggle-icon" style="font-size:11px; color:var(--text-muted);">收合 ▲</span>
     </div>
 
     <div class="legend-body">
-      <div class="legend-item">
+      <div class="legend-item clickable" onclick="focusRouteLayer('OPERATING_TRACK')">
         <div class="legend-icon-wrap" style="background:linear-gradient(135deg,#0284c7,#0369a1);">
           <svg viewBox="0 0 24 24" width="20" height="20" fill="#ffffff">
             <path d="M12 2c-4.42 0-8 .5-8 4v9.5C4 17.43 5.57 19 7.5 19L6 20.5v.5h12v-.5L16.5 19c1.93 0 3.5-1.57 3.5-3.5V6c0-3.5-3.58-4-8-4zM7.5 17c-.83 0-1.5-.67-1.5-1.5S6.67 14 7.5 14s1.5.67 1.5 1.5S8.33 17 7.5 17zm3.5-6H6V6h5v5zm2 0V6h5v5h-5zm3.5 6c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/>
@@ -795,7 +827,7 @@
         </div>
       </div>
 
-      <div class="legend-item">
+      <div class="legend-item clickable" onclick="focusLocation('CHONGDE')">
         <div class="legend-icon-wrap" style="background:linear-gradient(135deg,#eab308,#ca8a04); border-color:#fef08a;">
           <svg viewBox="0 0 24 24" width="20" height="20" fill="#090d16">
             <path d="M4 15.5C4 17.43 5.57 19 7.5 19L6 20.5v.5h12v-.5L16.5 19c1.93 0 3.5-1.57 3.5-3.5V8h-16v7.5zm3.5 1.5c-.83 0-1.5-.67-1.5-1.5S6.67 14 7.5 14s1.5.67 1.5 1.5S8.33 17 7.5 17zm9 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zM3 6h18v1.5H3V6zm3-3l3-1.5 3 1.5 3-1.5 3 1.5v2H6V3z"/>
@@ -807,7 +839,7 @@
         </div>
       </div>
 
-      <div class="legend-item">
+      <div class="legend-item clickable" onclick="focusLocation('CHONGDE')">
         <div class="legend-icon-wrap" style="background:linear-gradient(135deg,#f97316,#ea580c); border-color:#fed7aa;">
           <svg viewBox="0 0 24 24" width="20" height="20" fill="#ffffff">
             <path d="M20 8h-3V4H3c-1.1 0-2 .9-2 2v11h2c0 1.66 1.34 3 3 3s3-1.34 3-3h6c0 1.66 1.34 3 3 3s3-1.34 3-3h2v-5l-3-4zM6 18.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm13.5-9l1.96 2.5H17V9.5h2.5zm-1.5 9c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/>
@@ -819,24 +851,24 @@
         </div>
       </div>
 
-      <div class="legend-item">
-        <div class="legend-line-sample" style="background:#10b981;"></div>
-        <div><strong style="color:#6ee7b7;">營運通行正線軌道</strong>（100%貼合台鐵路廊）</div>
+      <div class="legend-item clickable" onclick="focusRouteLayer('OPERATING_TRACK')">
+        <div class="legend-line-sample" style="background:#10b981; box-shadow:0 0 8px #10b981;"></div>
+        <div><strong style="color:#6ee7b7;">營運通行正線軌道</strong>（單線雙向或假日雙線・點擊定位）</div>
       </div>
 
-      <div class="legend-item">
-        <div class="legend-line-sample" style="background:repeating-linear-gradient(90deg,#f97316 0,#f97316 8px,transparent 8px,transparent 14px);"></div>
-        <div><strong style="color:#fdba74;">封鎖施工中正線工區</strong>（滑模推進/托軌橫移）</div>
+      <div class="legend-item clickable" onclick="focusRouteLayer('CLOSED_WORK_ZONE')">
+        <div class="legend-line-sample" style="background:repeating-linear-gradient(90deg,#f97316 0,#f97316 8px,#fde047 8px,#fde047 14px);"></div>
+        <div><strong style="color:#fdba74;">封鎖施工中正線工區</strong>（滑模推進/托軌橫移・點擊定位）</div>
       </div>
 
-      <div class="legend-item">
+      <div class="legend-item clickable" onclick="focusRouteLayer('PASSING_SIDING')">
         <div class="legend-line-sample" style="background:repeating-linear-gradient(90deg,#06b6d4 0,#06b6d4 6px,transparent 6px,transparent 10px);"></div>
         <div><strong style="color:#67e8f9;">和仁站(6~9股) & 崇德站(4~7股) 會車待避股道</strong></div>
       </div>
 
-      <div class="legend-item">
-        <div class="legend-line-sample" style="background:repeating-linear-gradient(90deg,#38bdf8 0,#38bdf8 6px,transparent 6px,transparent 10px);"></div>
-        <div><strong style="color:#7dd3fc;">海側施工便道 & 70m/50m/30m 鋼便橋</strong></div>
+      <div class="legend-item clickable" onclick="focusRouteLayer('HAUL_ROAD_BRIDGES')">
+        <div class="legend-line-sample" style="background:repeating-linear-gradient(90deg,#38bdf8 0,#38bdf8 6px,#ffffff 6px,#ffffff 10px);"></div>
+        <div><strong style="color:#7dd3fc;">海側施工便道 & 70m/50m/30m 鋼便橋</strong>（點擊定位）</div>
       </div>
     </div>
   </div>
@@ -1184,38 +1216,130 @@
       SUHUA_FILL: [24.164500, 121.656500]
     };
 
-    // 繪製西正線與東正線
-    const westLine = L.polyline(westTrackCoords, { color: '#10b981', weight: 5, opacity: 0.92 }).addTo(map);
-    const eastLine = L.polyline(eastTrackCoords, { color: '#f97316', weight: 5, dashArray: '10, 8', opacity: 0.92 }).addTo(map);
+    // =========================================================================
+    // 2.1 雙線視覺平行微偏移與路基護套 (確保雙線緊貼 Google Maps 鐵路路廊且放大時平行不重疊)
+    // // WHY: OSM 原始東西線局部間距僅 4m，在 Zoom 15~16 下兩條 5px 線段會互相覆蓋；
+    // // 透過以真實鐵路中心線為基準維持 ±0.00004° (~4m) 最小平行視覺間距，讓雙軌100%坐落於鐵路路基上且清晰分明！
+    // =========================================================================
+    const westVisualCoords = westTrackCoords.map(p => [p[0], p[1] - 0.000035]);
+    const eastVisualCoords = eastTrackCoords.map(p => [p[0], p[1] + 0.000035]);
 
-    // 繪製「和仁站第 6~9 股」與「崇德站第 4~7 股」會車待避股道 (青色高亮虛線，清楚標出雙端會車區)
-    const herenPassingSiding = L.polyline([
-      [24.243190, 121.714366],
-      [24.241800, 121.712950],
-      [24.239603, 121.711508]
-    ], { color: '#06b6d4', weight: 6, dashArray: '6, 6', opacity: 0.95 })
-      .bindTooltip('🚉 和仁站第 6~9 股｜單線施工期間「北端會車待避股道」')
+    // 鐵路道碴黑色護套底座 (讓軌道在衛星圖與地形圖上 100% 鎖定台鐵路廊)
+    L.polyline(westVisualCoords, { color: '#090d16', weight: 9, opacity: 0.75 }).addTo(map);
+    L.polyline(eastVisualCoords, { color: '#090d16', weight: 9, opacity: 0.75 }).addTo(map);
+
+    // ① 營運通行正線軌道（單線雙向或假日雙線）
+    const westLine = L.polyline(westVisualCoords, {
+      color: '#10b981', weight: 5, opacity: 0.96
+    }).bindTooltip('🟢 營運通行正線軌道（西正線・靠山側）｜100%貼合臺鐵北迴線路廊').addTo(map);
+
+    const eastLine = L.polyline(eastVisualCoords, {
+      color: '#64748b', weight: 4, dashArray: '8, 6', opacity: 0.85
+    }).bindTooltip('🛤️ 東正線（靠海側）｜非施工隧道段與站區軌道').addTo(map);
+
+    // =========================================================================
+    // 2.2 ② 封鎖施工中正線工區（滑模推進/托軌橫移）— 100% 擷取自真實 K53 與 K56 正線軌道頂點！
+    // // WHY: 僅在真實施工區段（K53 小清水溪橋與洞口明隧道、K56 崇德隧道南口 STA 56+440 ~ STA 57+050）
+    // // 標示高對比橘黃工程封鎖軌道，不再誤畫進長隧道山體內部，完全貼合路線！
+    // =========================================================================
+    const k53EastWorkCoords = eastVisualCoords.slice(34, 38); // K53 小清水溪橋與南北洞口明隧道 (24.20706°N ~ 24.20588°N)
+    const k53WestWorkCoords = westVisualCoords.slice(29, 33);
+    const k56EastWorkCoords = eastVisualCoords.slice(43, 54); // K56 崇德隧道南口 STA 56+440 (24.18429°N) ~ STA 57+050 (24.17670°N)
+    const k56WestWorkCoords = westVisualCoords.slice(38, 47);
+
+    // 封鎖施工正線工區底層警示護套 + 橘黃雙色工程虛線 (預設顯示於東正線 K53 & K56 工區)
+    const k53WorkCasing = L.polyline(k53EastWorkCoords, { color: '#7c2d12', weight: 10, opacity: 0.9 }).addTo(map);
+    const k53WorkLine = L.polyline(k53EastWorkCoords, {
+      color: '#f97316', weight: 6, dashArray: '10, 6', opacity: 1.0
+    }).bindTooltip('🚧 【封鎖施工中正線工區】K53 小清水溪橋 40m 單跨改建 & 南北洞口明隧道延伸').addTo(map);
+
+    const k56WorkCasing = L.polyline(k56EastWorkCoords, { color: '#7c2d12', weight: 10, opacity: 0.9 }).addTo(map);
+    const k56WorkLine = L.polyline(k56EastWorkCoords, {
+      color: '#f97316', weight: 6, dashArray: '10, 6', opacity: 1.0
+    }).bindTooltip('🚧 【封鎖施工中正線工區】K56 明/假隧道 (346m+214m 滑模推進) & 崇德二/四號橋 (托軌橫移)').addTo(map);
+
+    // =========================================================================
+    // 2.3 繪製「和仁站第 6~9 股」與「崇德站第 4~7 股」會車待避股道 (緊貼真實站場股道)
+    // =========================================================================
+    const herenPassingSiding = L.polyline(
+      eastTrackCoords.slice(1, 10).map(p => [p[0], p[1] + 0.00012]),
+      { color: '#06b6d4', weight: 6, dashArray: '6, 6', opacity: 0.95 }
+    ).bindTooltip('🚉 和仁站第 6~9 股｜單線施工期間「北端會車待避股道」').addTo(map);
+
+    const chongdePassingSiding = L.polyline(
+      eastTrackCoords.slice(57, 63).map(p => [p[0], p[1] + 0.00012]),
+      { color: '#06b6d4', weight: 6, dashArray: '6, 6', opacity: 0.95 }
+    ).bindTooltip('🚉 崇德站第 4~7 股｜單線施工期間「南端會車待避股道」').addTo(map);
+
+    // =========================================================================
+    // 2.4 ③ 海側施工便道 & 70m / 50m / 30m 鋼便橋 — 100% 由 K56 東正線真實頂點平行推算！
+    // // WHY: 直接取用 K56 東正線 (STA 56+440 ~ 崇德五號橋下 24.18429°N ~ 24.17534°N) 全部 13 個真實彎道頂點，
+    // // 向海側平移 +0.00012° (~11m)，使施工便道與 70m/50m/30m 鋼便橋完美緊貼鐵路海側路堤！
+    // =========================================================================
+    const k56SeasideHaulCoords = eastTrackCoords.slice(43, 56).map(p => [p[0], p[1] + 0.00012]);
+    const k53HaulCoords = eastTrackCoords.slice(34, 38).map(p => [p[0], p[1] + 0.00012]);
+
+    // 海側施工便道主線 (K56 全段 + 五號橋下 100m 海灘備援便道 + K53 石公溪構台便道)
+    const seasideHaulRoadCasing = L.polyline(k56SeasideHaulCoords, {
+      color: '#0c4a6e', weight: 8, opacity: 0.85
+    }).addTo(map);
+
+    const seasideHaulRoad = L.polyline(k56SeasideHaulCoords, {
+      color: '#38bdf8', weight: 4.5, dashArray: '8, 6', opacity: 1.0
+    }).bindTooltip('🛣️ 海側施工便道 (緊貼東正線海側｜含 Φ1.5m 排樁護岸 + 五號橋下 100m 海灘備援便道)').addTo(map);
+
+    const k53HaulRoad = L.polyline(k53HaulCoords, {
+      color: '#38bdf8', weight: 4.5, dashArray: '8, 6', opacity: 1.0
+    }).bindTooltip('🛣️ K53 石公溪施工便道與構台 (配合 40m 單跨鋼桁架橋改建)').addTo(map);
+
+    // 在路線上直接繪製三座高辨識度「70M / 50M / 30M 臨時鋼便橋」橋體線段與路線標章！
+    // (1) 東一工區：70M 鋼便橋 (跨越崇德二號橋野溪 24.182012°N，緊貼海側便道線)
+    const steelBridge70mCoords = [
+      [24.18242, 121.65832],
+      [24.18201, 121.65832],
+      [24.18160, 121.65830]
+    ];
+    L.polyline(steelBridge70mCoords, { color: '#ffffff', weight: 10, opacity: 0.95 }).addTo(map);
+    const bridge70mLine = L.polyline(steelBridge70mCoords, { color: '#0284c7', weight: 6, opacity: 1.0 })
+      .bindTooltip('🌉 【東一工區 70M 鋼便橋】跨越崇德二號橋 (K56+620) 野溪，供大型滑模與吊裝機具通行')
       .addTo(map);
 
-    const chongdePassingSiding = L.polyline([
-      [24.173480, 121.656057],
-      [24.171350, 121.655920],
-      [24.168321, 121.655226]
-    ], { color: '#06b6d4', weight: 6, dashArray: '6, 6', opacity: 0.95 })
-      .bindTooltip('🚉 崇德站第 4~7 股｜單線施工期間「南端會車待避股道」')
+    // (2) 西一工區：50M 鋼便橋 (位於崇德二號橋東側軌道間 24.1820°N，緊貼正線軌道)
+    const steelBridge50mCoords = [
+      [24.18230, 121.65810],
+      [24.18195, 121.65809],
+      [24.18165, 121.65808]
+    ];
+    L.polyline(steelBridge50mCoords, { color: '#fef08a', weight: 9, opacity: 0.95 }).addTo(map);
+    const bridge50mLine = L.polyline(steelBridge50mCoords, { color: '#0ea5e9', weight: 5, opacity: 1.0 })
+      .bindTooltip('🌉 【西一工區 50M 鋼便橋】於二號橋東側軌道間跨溪架設，供西正線階段施工通行')
       .addTo(map);
 
-    // 繪製海側東施工便道與 70m/50m/30m 鋼便橋 (緊貼真實 K56 軌道海側)
-    L.polyline([
-      [24.184289, 121.65855],
-      [24.182012, 121.65852],
-      [24.180810, 121.65842],
-      [24.178641, 121.65782],
-      [24.176704, 121.65718],
-      [24.175342, 121.65682]
-    ], { color: '#38bdf8', weight: 4, dashArray: '6, 6' })
-      .bindTooltip('🛣️ 海側東施工便道 (含 Φ1.5m 排樁、70M & 30M 鋼便橋、五號橋下100m海灘備援便道)')
+    // (3) 東二/西二工區：30M 鋼便橋 (跨越崇德四號橋野溪 24.17864°N，緊貼正線與海側便道)
+    const steelBridge30mCoords = [
+      [24.17895, 121.65770],
+      [24.17864, 121.65760],
+      [24.17832, 121.65750]
+    ];
+    L.polyline(steelBridge30mCoords, { color: '#ffffff', weight: 10, opacity: 0.95 }).addTo(map);
+    const bridge30mLine = L.polyline(steelBridge30mCoords, { color: '#0284c7', weight: 6, opacity: 1.0 })
+      .bindTooltip('🌉 【東二/西二工區 30M 鋼便橋】跨越崇德四號橋野溪，串聯五號橋下100m海灘備援便道')
       .addTo(map);
+
+    // 在路線正上方直接掛載 70M / 50M / 30M 鋼便橋膠囊標記，一眼即可在路線上看到三座鋼便橋！
+    function addBridgeOnRoutePill(latlng, label, tooltipText) {
+      L.marker(latlng, {
+        icon: L.divIcon({
+          className: '',
+          html: `<div class="bridge-onroute-pill" title="${tooltipText}" onclick="map.flyTo([${latlng[0]}, ${latlng[1]}], 17, {duration:1})">${label}</div>`,
+          iconAnchor: [-8, 12]
+        })
+      }).addTo(map);
+    }
+
+    addBridgeOnRoutePill([24.18215, 121.65834], '🌉 70M 鋼便橋 (東一跨二號橋)', '東一工區 70M 鋼便橋｜位於崇德二號橋海側路線上');
+    addBridgeOnRoutePill([24.18172, 121.65834], '🌉 50M 鋼便橋 (西一跨二號橋)', '西一工區 50M 鋼便橋｜位於崇德二號橋軌道側路線上');
+    addBridgeOnRoutePill([24.17864, 121.65764], '🌉 30M 鋼便橋 (跨崇德四號橋)', '東二/西二工區 30M 鋼便橋｜位於崇德四號橋路線上');
 
     // 繪製 K56 西側峭壁落石崩滑高潛勢區 (緊貼真實 K56 軌道西側山壁)
     L.polygon([
@@ -1262,11 +1386,11 @@
       }).addTo(map);
     }
 
-    addLandmark([24.2416, 121.7132], '🚉 和仁車站｜第 6~9 股單線會車待避區 & 蘇花安運碴起點', 'pin-amber', 'HEREN');
+    addLandmark([24.2416, 121.7134], '🚉 和仁車站｜第 6~9 股單線會車待避區 & 蘇花安運碴起點', 'pin-amber', 'HEREN');
     addLandmark([24.2063, 121.6706], '🌊 K53 小清水溪橋｜40m單跨不落墩 + 石公溪整治 + 洞口明隧道', '', 'K53');
-    addLandmark([24.1830, 121.6589], '🏗️ K56 東一/西一工區｜346m明假隧道 + 崇德二號橋30m + 70M/50M鋼便橋', 'pin-amber', 'K56_NORTH');
+    addLandmark([24.1833, 121.6589], '🏗️ K56 東一/西一工區｜346m明假隧道 + 崇德二號橋30m', 'pin-amber', 'K56_NORTH');
     addLandmark([24.1808, 121.6587], '💧 56K+816 洩水槽｜南北一、二工區分界點', '', 'K56_NORTH');
-    addLandmark([24.1788, 121.6582], '🛡️ K56 東二/西二工區｜214m假隧道 + 崇德四號橋20m + 30M鋼便橋', 'pin-emerald', 'K56_SOUTH');
+    addLandmark([24.1793, 121.6582], '🛡️ K56 東二/西二工區｜214m假隧道 + 崇德四號橋20m', 'pin-emerald', 'K56_SOUTH');
     addLandmark([24.1772, 121.6576], '⚡ 56K+990 電子圍籬 (雙線間距8.5~12m) & 山側101m擋牆', 'pin-rose', 'K56_SOUTH');
     addLandmark([24.1717, 121.6565], '🚉 崇德車站｜第 4~7 股單線會車待避區 ・ 第 1/2 股蘇花安卸碴軌', 'pin-amber', 'CHONGDE');
     addLandmark([24.1692, 121.6560], '🏗️ 新建崇德跨站式車站｜南移避險・東側鋼構預組・夜間4hr吊裝', 'pin-violet', 'CHONGDE');
@@ -1274,10 +1398,27 @@
     function focusLocation(loc) {
       if (loc === 'ALL') map.flyTo([24.2050, 121.6800], 13, { duration: 1.2 });
       if (loc === 'HEREN') map.flyTo([24.2415, 121.7100], 16, { duration: 1.2 });
-      if (loc === 'K53') map.flyTo([24.2063, 121.6680], 17, { duration: 1.2 });
-      if (loc === 'K56_NORTH') map.flyTo([24.1812, 121.6560], 16, { duration: 1.2 });
-      if (loc === 'K56_SOUTH') map.flyTo([24.1780, 121.6552], 16, { duration: 1.2 });
-      if (loc === 'CHONGDE') map.flyTo([24.1708, 121.6538], 16, { duration: 1.2 });
+      if (loc === 'K53') map.flyTo([24.2063, 121.6685], 17, { duration: 1.2 });
+      if (loc === 'K56_NORTH') map.flyTo([24.1805, 121.6565], 16, { duration: 1.2 });
+      if (loc === 'K56_SOUTH') map.flyTo([24.1780, 121.6558], 16, { duration: 1.2 });
+      if (loc === 'CHONGDE') map.flyTo([24.1708, 121.6542], 16, { duration: 1.2 });
+    }
+
+    // 點擊右上角圖例時，直接飛往該路線並開啟路線提示
+    function focusRouteLayer(layerType) {
+      if (layerType === 'OPERATING_TRACK') {
+        map.flyTo([24.1805, 121.6565], 16, { duration: 1.1 });
+        westLine.openTooltip([24.1812, 121.6579]);
+      } else if (layerType === 'CLOSED_WORK_ZONE') {
+        map.flyTo([24.1805, 121.6565], 16, { duration: 1.1 });
+        k56WorkLine.openTooltip([24.1808, 121.6581]);
+      } else if (layerType === 'PASSING_SIDING') {
+        map.flyTo([24.1715, 121.6545], 16, { duration: 1.1 });
+        chongdePassingSiding.openTooltip([24.17135, 121.65592]);
+      } else if (layerType === 'HAUL_ROAD_BRIDGES') {
+        map.flyTo([24.1805, 121.6572], 17, { duration: 1.1 });
+        seasideHaulRoad.openTooltip([24.1808, 121.6582]);
+      }
     }
 
     function switchTab(tabId) {
@@ -1314,9 +1455,9 @@
       return { coords, dists, total };
     }
 
-    // 擷取「和仁站 (idx 5) ～ 崇德站 (idx 52)」作為主要區間運行路徑，讓列車精確在和仁站與崇德站之間往返會車
-    const westMainSegment = westTrackCoords.slice(5, 53);
-    const eastMainSegment = eastTrackCoords.slice(5, 61);
+    // 擷取「和仁站 (idx 5) ～ 崇德站 (idx 52)」作為主要區間運行路徑，讓列車精確沿繪製之正線軌道在和仁站與崇德站之間往返會車
+    const westMainSegment = westVisualCoords.slice(5, 53);
+    const eastMainSegment = eastVisualCoords.slice(5, 61);
 
     const westMetric = buildCumulativeLengths(westMainSegment);
     const eastMetric = buildCumulativeLengths(eastMainSegment);
@@ -1435,8 +1576,12 @@
         barEast.className = 'track-bar work-amber';
         tagWest.innerText = '單線雙向營運';
         tagEast.innerText = '封鎖施工(滑模/橫移)';
-        westLine.setStyle({ color: '#10b981', dashArray: null });
-        eastLine.setStyle({ color: '#f97316', dashArray: '10, 8' });
+        westLine.setStyle({ color: '#10b981', weight: 5, dashArray: null, opacity: 0.96 });
+        eastLine.setStyle({ color: '#64748b', weight: 4, dashArray: '8, 6', opacity: 0.8 });
+        k53WorkCasing.setLatLngs(k53EastWorkCoords).setStyle({ opacity: 0.92, color: '#7c2d12' });
+        k53WorkLine.setLatLngs(k53EastWorkCoords).setStyle({ opacity: 1.0, color: '#f97316' });
+        k56WorkCasing.setLatLngs(k56EastWorkCoords).setStyle({ opacity: 0.92, color: '#7c2d12' });
+        k56WorkLine.setLatLngs(k56EastWorkCoords).setStyle({ opacity: 1.0, color: '#f97316' });
       } else if (mode === 'WEEKDAY_WEST') {
         document.getElementById('btn-op-west').classList.add('active');
         pill.innerText = '平日：西施東營';
@@ -1445,8 +1590,12 @@
         barEast.className = 'track-bar flow-green';
         tagWest.innerText = '封鎖施工中';
         tagEast.innerText = '單線雙向營運';
-        westLine.setStyle({ color: '#a855f7', dashArray: '10, 8' });
-        eastLine.setStyle({ color: '#10b981', dashArray: null });
+        westLine.setStyle({ color: '#64748b', weight: 4, dashArray: '8, 6', opacity: 0.8 });
+        eastLine.setStyle({ color: '#10b981', weight: 5, dashArray: null, opacity: 0.96 });
+        k53WorkCasing.setLatLngs(k53WestWorkCoords).setStyle({ opacity: 0.92, color: '#7c2d12' });
+        k53WorkLine.setLatLngs(k53WestWorkCoords).setStyle({ opacity: 1.0, color: '#f97316' });
+        k56WorkCasing.setLatLngs(k56WestWorkCoords).setStyle({ opacity: 0.92, color: '#7c2d12' });
+        k56WorkLine.setLatLngs(k56WestWorkCoords).setStyle({ opacity: 1.0, color: '#f97316' });
       } else if (mode === 'HOLIDAY_DUAL') {
         document.getElementById('btn-op-holiday').classList.add('active');
         pill.innerText = '假日：恢復雙線';
@@ -1455,8 +1604,12 @@
         barEast.className = 'track-bar flow-green';
         tagWest.innerText = '北上正線通行';
         tagEast.innerText = '南下正線通行';
-        westLine.setStyle({ color: '#10b981', dashArray: null });
-        eastLine.setStyle({ color: '#10b981', dashArray: null });
+        westLine.setStyle({ color: '#10b981', weight: 5, dashArray: null, opacity: 0.96 });
+        eastLine.setStyle({ color: '#10b981', weight: 5, dashArray: null, opacity: 0.96 });
+        k53WorkCasing.setStyle({ opacity: 0 });
+        k53WorkLine.setStyle({ opacity: 0 });
+        k56WorkCasing.setStyle({ opacity: 0 });
+        k56WorkLine.setStyle({ opacity: 0 });
       } else if (mode === 'NIGHT_WINDOW') {
         document.getElementById('btn-op-night').classList.add('active');
         pill.innerText = '夜間斷電封鎖 (4hr)';
@@ -1465,8 +1618,12 @@
         barEast.className = 'track-bar work-amber';
         tagWest.innerText = '夜間斷電吊裝';
         tagEast.innerText = '夜間斷電吊裝';
-        westLine.setStyle({ color: '#38bdf8', dashArray: '4, 8' });
-        eastLine.setStyle({ color: '#38bdf8', dashArray: '4, 8' });
+        westLine.setStyle({ color: '#38bdf8', weight: 4, dashArray: '4, 8', opacity: 0.85 });
+        eastLine.setStyle({ color: '#38bdf8', weight: 4, dashArray: '4, 8', opacity: 0.85 });
+        k53WorkCasing.setLatLngs(k53EastWorkCoords).setStyle({ opacity: 0.92, color: '#7c2d12' });
+        k53WorkLine.setLatLngs(k53EastWorkCoords).setStyle({ opacity: 1.0, color: '#f97316' });
+        k56WorkCasing.setLatLngs(k56EastWorkCoords).setStyle({ opacity: 0.92, color: '#7c2d12' });
+        k56WorkLine.setLatLngs(k56EastWorkCoords).setStyle({ opacity: 1.0, color: '#f97316' });
       }
     }
 
@@ -1702,3 +1859,4 @@
   </script>
 </body>
 </html>
+
