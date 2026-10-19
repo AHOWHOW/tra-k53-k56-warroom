@@ -1,0 +1,1421 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>臺鐵北迴線 K53 & K56 改建工程｜施工臨時方案與運碴調度動態地理戰情室</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <style>
+    :root {
+      --bg-deep: #070b14;
+      --glass-bg: rgba(15, 23, 42, 0.78);
+      --glass-card: rgba(30, 41, 59, 0.65);
+      --glass-border: rgba(255, 255, 255, 0.12);
+      --glass-highlight: rgba(56, 189, 248, 0.28);
+      --text-primary: #f8fafc;
+      --text-secondary: #cbd5e1;
+      --text-muted: #94a3b8;
+      --accent-sky: #38bdf8;
+      --accent-emerald: #10b981;
+      --accent-amber: #f59e0b;
+      --accent-orange: #f97316;
+      --accent-violet: #a855f7;
+      --accent-rose: #f43f5e;
+      --radius-lg: 18px;
+      --radius-md: 12px;
+      --shadow-soft: 0 20px 50px rgba(0, 0, 0, 0.55), 0 4px 16px rgba(0, 0, 0, 0.3);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: "PingFang TC", "Noto Sans TC", "Microsoft JhengHei", -apple-system, sans-serif;
+      background: var(--bg-deep);
+      color: var(--text-primary);
+      height: 100vh;
+      width: 100vw;
+      overflow: hidden;
+      position: relative;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* 100% 全幅沉浸式 Google Maps 底圖 */
+    #map {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 1;
+      background: #060b14;
+    }
+
+    /* 頂部懸浮式玻璃導航列 (留白與呼吸感設計) */
+    .top-floating-nav {
+      position: absolute;
+      top: 20px;
+      left: 24px;
+      right: 24px;
+      height: 68px;
+      background: var(--glass-bg);
+      backdrop-filter: blur(20px) saturate(160%);
+      -webkit-backdrop-filter: blur(20px) saturate(160%);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-soft);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 24px;
+      z-index: 1000;
+    }
+
+    .brand-area {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .brand-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 11px;
+      background: linear-gradient(135deg, #0284c7, #10b981);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      box-shadow: 0 4px 15px rgba(56, 189, 248, 0.35);
+    }
+
+    .brand-text h1 {
+      font-size: 16px;
+      font-weight: 700;
+      letter-spacing: 0.6px;
+      color: var(--text-primary);
+    }
+
+    .brand-text p {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 2px;
+      letter-spacing: 0.3px;
+    }
+
+    /* 四大戰情分頁切換器 (Segmented Tabs) */
+    .view-tabs {
+      display: flex;
+      background: rgba(9, 14, 26, 0.65);
+      padding: 5px;
+      border-radius: 14px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      gap: 6px;
+    }
+
+    .view-tab {
+      background: transparent;
+      color: var(--text-secondary);
+      border: none;
+      padding: 9px 18px;
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-family: inherit;
+      letter-spacing: 0.3px;
+    }
+
+    .view-tab:hover {
+      color: #fff;
+      background: rgba(255, 255, 255, 0.06);
+    }
+
+    .view-tab.active {
+      background: linear-gradient(135deg, rgba(56, 189, 248, 0.25), rgba(14, 165, 233, 0.4));
+      color: #fff;
+      border: 1px solid rgba(56, 189, 248, 0.5);
+      box-shadow: 0 4px 14px rgba(14, 165, 233, 0.25);
+    }
+
+    .nav-right-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .pill-btn {
+      background: rgba(30, 41, 59, 0.75);
+      color: var(--text-secondary);
+      border: 1px solid var(--glass-border);
+      padding: 8px 14px;
+      border-radius: 10px;
+      font-size: 12.5px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-family: inherit;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .pill-btn:hover {
+      background: rgba(56, 189, 248, 0.2);
+      color: #fff;
+      border-color: var(--accent-sky);
+    }
+
+    .pill-btn.active {
+      background: var(--accent-sky);
+      color: #070b14;
+      border-color: var(--accent-sky);
+      font-weight: 700;
+    }
+
+    .btn-deploy-gas {
+      background: linear-gradient(135deg, #10b981, #059669);
+      color: #fff;
+      border: none;
+    }
+
+    .btn-deploy-gas:hover {
+      background: linear-gradient(135deg, #34d399, #10b981);
+      color: #052e16;
+    }
+
+    /* 懸浮式分頁內容容器 (每次只優雅呈現一個主題面板，保留 75% 以上地圖視野) */
+    .stage-panel {
+      position: absolute;
+      top: 108px;
+      left: 24px;
+      width: 420px;
+      max-height: calc(100vh - 190px);
+      overflow-y: auto;
+      background: var(--glass-bg);
+      backdrop-filter: blur(22px) saturate(160%);
+      -webkit-backdrop-filter: blur(22px) saturate(160%);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-soft);
+      padding: 24px;
+      z-index: 800;
+      display: none;
+      flex-direction: column;
+      gap: 18px;
+      animation: fadeSlideIn 0.32s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .stage-panel.active {
+      display: flex;
+    }
+
+    /* 甘特圖專用底部寬幅懸浮面板 (僅在分頁4或展開時顯示) */
+    .gantt-stage-panel {
+      position: absolute;
+      bottom: 84px;
+      left: 24px;
+      right: 24px;
+      height: 360px;
+      background: rgba(11, 17, 32, 0.88);
+      backdrop-filter: blur(24px) saturate(170%);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-soft);
+      padding: 20px 24px;
+      z-index: 850;
+      display: none;
+      flex-direction: column;
+      gap: 14px;
+      animation: fadeSlideUp 0.32s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .gantt-stage-panel.active {
+      display: flex;
+    }
+
+    @keyframes fadeSlideIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes fadeSlideUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* 面板內部排版美學 */
+    .panel-header {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      padding-bottom: 14px;
+    }
+
+    .panel-eyebrow {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1.2px;
+      color: var(--accent-sky);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .panel-header h2 {
+      font-size: 19px;
+      font-weight: 700;
+      line-height: 1.35;
+      color: #fff;
+    }
+
+    .panel-header p {
+      font-size: 13px;
+      line-height: 1.6;
+      color: var(--text-muted);
+    }
+
+    /* 呼吸感資訊卡片 */
+    .info-card {
+      background: var(--glass-card);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: var(--radius-md);
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      transition: border-color 0.2s ease;
+    }
+
+    .info-card:hover {
+      border-color: rgba(56, 189, 248, 0.35);
+    }
+
+    .info-card-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: #f1f5f9;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .info-card-desc {
+      font-size: 13px;
+      line-height: 1.65;
+      color: var(--text-secondary);
+    }
+
+    .badge {
+      font-size: 11px;
+      font-weight: 700;
+      padding: 3px 10px;
+      border-radius: 99px;
+      letter-spacing: 0.3px;
+    }
+
+    .badge-sky { background: rgba(56, 189, 248, 0.18); color: #7dd3fc; border: 1px solid rgba(56, 189, 248, 0.4); }
+    .badge-amber { background: rgba(245, 158, 11, 0.18); color: #fcd34d; border: 1px solid rgba(245, 158, 11, 0.4); }
+    .badge-emerald { background: rgba(16, 185, 129, 0.18); color: #6ee7b7; border: 1px solid rgba(16, 185, 129, 0.4); }
+    .badge-violet { background: rgba(168, 85, 247, 0.18); color: #d8b4fe; border: 1px solid rgba(168, 85, 247, 0.4); }
+    .badge-rose { background: rgba(244, 63, 94, 0.18); color: #fda4af; border: 1px solid rgba(244, 63, 94, 0.4); }
+
+    /* 模式選擇按鈕網格 */
+    .mode-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .mode-card-btn {
+      background: rgba(15, 23, 42, 0.65);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+      padding: 12px 14px;
+      text-align: left;
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-family: inherit;
+    }
+
+    .mode-card-btn:hover {
+      background: rgba(30, 41, 59, 0.9);
+      border-color: rgba(255, 255, 255, 0.25);
+    }
+
+    .mode-card-btn.active {
+      background: rgba(56, 189, 248, 0.16);
+      border-color: var(--accent-sky);
+      color: #fff;
+      box-shadow: 0 4px 16px rgba(56, 189, 248, 0.2);
+    }
+
+    .mode-card-btn strong {
+      display: block;
+      font-size: 13.5px;
+      margin-bottom: 4px;
+      color: #fff;
+    }
+
+    .mode-card-btn span {
+      font-size: 11.5px;
+      color: var(--text-muted);
+    }
+
+    /* 視覺化雙軌運轉示意盒 */
+    .track-visual-box {
+      background: rgba(7, 11, 20, 0.75);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .track-lane {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .track-lane-label {
+      width: 88px;
+      font-size: 12.5px;
+      font-weight: 700;
+    }
+
+    .track-bar {
+      flex: 1;
+      height: 10px;
+      border-radius: 99px;
+      background: #1e293b;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .track-bar.flow-green {
+      background: repeating-linear-gradient(90deg, #10b981 0px, #10b981 18px, #064e3b 18px, #064e3b 30px);
+      background-size: 48px 100%;
+      animation: gentleTrackFlow 2.2s linear infinite;
+    }
+
+    .track-bar.work-amber {
+      background: repeating-linear-gradient(45deg, #f59e0b, #f59e0b 10px, #78350f 10px, #78350f 20px);
+    }
+
+    @keyframes gentleTrackFlow {
+      from { background-position: 0 0; }
+      to { background-position: 48px 0; }
+    }
+
+    /* 底部中央懸浮控制膠囊：空間快速定位 + 動畫速度控制 */
+    .bottom-floating-dock {
+      position: absolute;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--glass-bg);
+      backdrop-filter: blur(20px) saturate(160%);
+      border: 1px solid var(--glass-border);
+      border-radius: 99px;
+      padding: 8px 18px;
+      box-shadow: var(--shadow-soft);
+      display: flex;
+      align-items: center;
+      gap: 18px;
+      z-index: 950;
+      white-space: nowrap;
+    }
+
+    .dock-group {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .dock-divider {
+      width: 1px;
+      height: 24px;
+      background: rgba(255, 255, 255, 0.14);
+    }
+
+    .dock-label {
+      font-size: 11.5px;
+      color: var(--text-muted);
+      font-weight: 600;
+      margin-right: 4px;
+    }
+
+    .dock-btn {
+      background: transparent;
+      color: var(--text-secondary);
+      border: 1px solid transparent;
+      padding: 6px 12px;
+      border-radius: 99px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-family: inherit;
+    }
+
+    .dock-btn:hover {
+      color: #fff;
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    .dock-btn.active {
+      background: rgba(56, 189, 248, 0.22);
+      color: var(--accent-sky);
+      border-color: rgba(56, 189, 248, 0.45);
+    }
+
+    /* 地圖上優雅的動態列車與運碴車膠囊 (附帶即時文字說明，不再只是看不懂的小圓點) */
+    .vehicle-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 5px 12px;
+      border-radius: 99px;
+      font-size: 12px;
+      font-weight: 700;
+      white-space: nowrap;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.65);
+      border: 1.5px solid rgba(255, 255, 255, 0.85);
+      backdrop-filter: blur(8px);
+      transition: transform 0.1s linear;
+      pointer-events: auto;
+    }
+
+    .vehicle-pill-pax {
+      background: rgba(2, 132, 199, 0.92);
+      color: #fff;
+    }
+
+    .vehicle-pill-spoil {
+      background: rgba(234, 179, 8, 0.95);
+      color: #090d16;
+      border-color: #fef08a;
+    }
+
+    .vehicle-pill-truck {
+      background: rgba(249, 115, 22, 0.92);
+      color: #fff;
+      font-size: 11.5px;
+      padding: 4px 10px;
+    }
+
+    /* 地圖工區地標卡片式標籤 */
+    .landmark-pin {
+      background: rgba(15, 23, 42, 0.88);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.22);
+      border-left: 4px solid var(--accent-sky);
+      color: #f8fafc;
+      padding: 6px 12px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-weight: 600;
+      white-space: nowrap;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5);
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .landmark-pin:hover {
+      transform: translateY(-2px) scale(1.03);
+      border-color: #fff;
+    }
+
+    .landmark-pin.pin-amber { border-left-color: var(--accent-amber); }
+    .landmark-pin.pin-emerald { border-left-color: var(--accent-emerald); }
+    .landmark-pin.pin-violet { border-left-color: var(--accent-violet); }
+    .landmark-pin.pin-rose { border-left-color: var(--accent-rose); }
+
+    /* 甘特圖優雅表格樣式 */
+    .gantt-scroll-area {
+      flex: 1;
+      overflow: auto;
+      border-radius: 10px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .gantt-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px;
+      table-layout: fixed;
+    }
+
+    .gantt-table th, .gantt-table td {
+      border: 1px solid rgba(255, 255, 255, 0.07);
+      padding: 6px 4px;
+      text-align: center;
+    }
+
+    .gantt-table th.task-col, .gantt-table td.task-col {
+      width: 250px;
+      text-align: left;
+      padding-left: 12px;
+      background: rgba(15, 23, 42, 0.95);
+      position: sticky;
+      left: 0;
+      z-index: 2;
+      font-weight: 600;
+    }
+
+    .gantt-row {
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+
+    .gantt-row:hover {
+      background: rgba(56, 189, 248, 0.12);
+    }
+
+    .gantt-row.active-row td.task-col {
+      color: var(--accent-amber);
+      border-left: 3px solid var(--accent-amber);
+    }
+
+    .gantt-bar {
+      height: 12px;
+      border-radius: 99px;
+      width: 100%;
+    }
+
+    .gantt-curr-col {
+      background: rgba(56, 189, 248, 0.2) !important;
+    }
+
+    /* 模態框 (Google Space GAS 部署指南) */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(3, 7, 18, 0.78);
+      backdrop-filter: blur(10px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 3000;
+      padding: 24px;
+    }
+
+    .modal-backdrop.open {
+      display: flex;
+    }
+
+    .modal-box {
+      background: #0f172a;
+      border: 1px solid rgba(56, 189, 248, 0.4);
+      border-radius: 20px;
+      max-width: 720px;
+      width: 100%;
+      padding: 28px;
+      box-shadow: var(--shadow-soft);
+      line-height: 1.7;
+    }
+
+    .code-block {
+      background: #020617;
+      border: 1px solid #1e293b;
+      color: #38bdf8;
+      padding: 14px;
+      border-radius: 10px;
+      font-family: Consolas, monospace;
+      font-size: 12.5px;
+      overflow-x: auto;
+      margin: 10px 0;
+      white-space: pre;
+    }
+
+    /* 滾動條美化 */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: rgba(148, 163, 184, 0.3); border-radius: 99px; }
+  </style>
+</head>
+<body>
+
+  <!-- 全幅 Google Map 底圖 -->
+  <div id="map"></div>
+
+  <!-- 頂部懸浮式玻璃導航列：分為 4 大清晰主題分頁 -->
+  <header class="top-floating-nav">
+    <div class="brand-area">
+      <div class="brand-icon">🛤️</div>
+      <div class="brand-text">
+        <h1>臺鐵北迴線 K53 & K56 改建工程戰情中心</h1>
+        <p>施工中臨時方案 × 平假日單雙線調度 × 蘇花安運碴動態模擬</p>
+      </div>
+    </div>
+
+    <!-- 4 大主題分頁 (不把所有面板擠在同一個畫面) -->
+    <nav class="view-tabs">
+      <button class="view-tab active" id="tab-overview" onclick="switchTab('overview')">
+        <span>🗺️</span> 1. 工區總覽與鋼便橋
+      </button>
+      <button class="view-tab" id="tab-tracks" onclick="switchTab('tracks')">
+        <span>🚦</span> 2. 平假日單雙線切換
+      </button>
+      <button class="view-tab" id="tab-spoil" onclick="switchTab('spoil')">
+        <span>🪨</span> 3. 蘇花安運碴車調度
+      </button>
+      <button class="view-tab" id="tab-gantt" onclick="switchTab('gantt')">
+        <span>📅</span> 4. 117~125年甘特圖推演
+      </button>
+    </nav>
+
+    <div class="nav-right-actions">
+      <button class="pill-btn active" id="btn-map-hybrid" onclick="switchBaseMap('hybrid')">🛰️ 衛星混合</button>
+      <button class="pill-btn" id="btn-map-terrain" onclick="switchBaseMap('terrain')">⛰️ 地形圖</button>
+      <button class="pill-btn btn-deploy-gas" onclick="toggleGasModal(true)">☁️ 部署至 Google Space</button>
+    </div>
+  </header>
+
+  <!-- =====================================================================
+       分頁 ①：工區總覽與臨時鋼便橋配置 (預設開啟，畫面清爽寬敞)
+       ===================================================================== -->
+  <aside class="stage-panel active" id="panel-overview">
+    <div class="panel-header">
+      <div class="panel-eyebrow">
+        <span>STAGE 01 · SPATIAL OVERVIEW</span>
+        <span class="badge badge-sky">點選卡片飛往工區</span>
+      </div>
+      <h2>K53 與 K56 施工分區及臨時便橋配置</h2>
+      <p>以 <code>56K+816 洩水槽</code> 分割南北兩小工區同步推進，並於海側架設跨越野溪之臨時鋼便橋，確保橋梁與隧道施工互不干擾。</p>
+    </div>
+
+    <div class="info-card" style="cursor:pointer;" onclick="focusLocation('K53')">
+      <div class="info-card-title">
+        <span>🌊 K53 小清水溪橋與石公溪整治</span>
+        <span class="badge badge-sky">工期 18 個月</span>
+      </div>
+      <div class="info-card-desc">
+        • <strong>永久改建</strong>：東西正線改採 40m 單跨不落墩鋼桁架橋（梁底抬高 85cm）、石公溪護岸改建與固床工延伸。<br>
+        • <strong>臨時方案</strong>：洞口增設明隧道（配合東西正線半半施工），配置 CCTV、水位計與 AI 軌道異物辨識連動號誌。
+      </div>
+    </div>
+
+    <div class="info-card" style="cursor:pointer;" onclick="focusLocation('K56_NORTH')">
+      <div class="info-card-title">
+        <span>🏗️ K56 東一 / 西一工區 (北段)</span>
+        <span class="badge badge-amber">東28月 / 西21月</span>
+      </div>
+      <div class="info-card-desc">
+        • <strong>範圍</strong>：崇德隧道南口 (<code>STA 56+440</code>) ～ <code>56K+816</code> 洩水槽。<br>
+        • <strong>核心工程</strong>：346m 明/假隧道 + 崇德二號橋 (<code>K56+620</code>) 30m 單跨預力混凝土隧道橋。<br>
+        • <strong>臨時鋼便橋</strong>：跨越野溪架設 <strong>東一 70M 鋼便橋</strong>、<strong>西一 50M 鋼便橋</strong>，海側施作 $\Phi 1.5\text{m}$ 排樁。
+      </div>
+    </div>
+
+    <div class="info-card" style="cursor:pointer;" onclick="focusLocation('K56_SOUTH')">
+      <div class="info-card-title">
+        <span>🛡️ K56 東二 / 西二工區 (南段)</span>
+        <span class="badge badge-emerald">東25月 / 西18月</span>
+      </div>
+      <div class="info-card-desc">
+        • <strong>範圍</strong>：<code>56K+816</code> 洩水槽 ～ <code>STA 57+050</code> 假隧道南端。<br>
+        • <strong>核心工程</strong>：214m 假隧道 + 崇德四號橋 20m 單跨預力混凝土隧道橋 + 山側 101m 擋土牆。<br>
+        • <strong>臨時便道與便橋</strong>：東西側各設 <strong>30M 鋼便橋</strong>；南端由崇德五號橋下海灘通道往北構築 <strong>100m 備援施工便道</strong>。
+      </div>
+    </div>
+
+    <div class="info-card" style="cursor:pointer;" onclick="focusLocation('CHONGDE')">
+      <div class="info-card-title">
+        <span>🚉 新建崇德跨站式車站 (南移避險)</span>
+        <span class="badge badge-violet">工期 34 個月</span>
+      </div>
+      <div class="info-card-desc">
+        • 站體南移避開北側 0403 崩塌高風險區，採用 SMRF 韌性鋼骨大跨距跨越軌道（立柱於兩側月台）。<br>
+        • 於東正線空地設<strong>鋼構加工組立區</strong>，利用<strong>夜間斷電 4 小時窗口</strong>吊裝閉合對焊。
+      </div>
+    </div>
+  </aside>
+
+  <!-- =====================================================================
+       分頁 ②：平假日單雙線切換與托軌橫移工法模擬
+       ===================================================================== -->
+  <aside class="stage-panel" id="panel-tracks">
+    <div class="panel-header">
+      <div class="panel-eyebrow">
+        <span>STAGE 02 · TRACK OPERATION & METHODS</span>
+        <span class="badge badge-amber" id="track-mode-pill">平日：東施西營</span>
+      </div>
+      <h2>平假日單雙線切換與半半施工模擬</h2>
+      <p>切換下方 4 種營運時段，觀察地圖上<strong>東/西正線列車單線交會待避（和仁 6~9 股、崇德 4~7 股）</strong>與施工封鎖狀態：</p>
+    </div>
+
+    <div class="mode-grid">
+      <button class="mode-card-btn active" id="btn-op-east" onclick="setOperationMode('WEEKDAY_EAST')">
+        <strong>🚧 平日：東施西營</strong>
+        <span>118~120年｜西線單線雙向營運，東線封鎖滑模/橫移</span>
+      </button>
+      <button class="mode-card-btn" id="btn-op-west" onclick="setOperationMode('WEEKDAY_WEST')">
+        <strong>🚧 平日：西施東營</strong>
+        <span>122~124年｜東線新隧道通車，西線封鎖施工</span>
+      </button>
+      <button class="mode-card-btn" id="btn-op-holiday" onclick="setOperationMode('HOLIDAY_DUAL')">
+        <strong>🚄 假日：恢復雙線</strong>
+        <span>週六日｜機具退縮整理，托軌工程梁承載雙線運行</span>
+      </button>
+      <button class="mode-card-btn" id="btn-op-night" onclick="setOperationMode('NIGHT_WINDOW')">
+        <strong>🌙 夜間斷電封鎖 (4hr)</strong>
+        <span>00:00~04:00｜崇德站鋼構吊裝、托軌架設、空車留置</span>
+      </button>
+    </div>
+
+    <!-- 雙軌動態視覺指示器 -->
+    <div class="track-visual-box">
+      <div style="display:flex; justify-content:space-between; font-size:12px; color:var(--text-muted);">
+        <span>⬅ 北上 (往和仁站 6~9 股待避)</span>
+        <span style="color:var(--accent-sky); font-weight:700;" id="sim-status-text">單線雙向交會運轉中</span>
+        <span>南下 (往崇德站 4~7 股待避) ➡</span>
+      </div>
+
+      <div class="track-lane">
+        <span class="track-lane-label" style="color:#d8b4fe;">西正線 (靠山)</span>
+        <div class="track-bar flow-green" id="bar-west"></div>
+        <span class="badge badge-emerald" id="tag-west">單線營運中</span>
+      </div>
+
+      <div class="track-lane">
+        <span class="track-lane-label" style="color:#fdba74;">東正線 (靠海)</span>
+        <div class="track-bar work-amber" id="bar-east"></div>
+        <span class="badge badge-amber" id="tag-east">封鎖施工中</span>
+      </div>
+    </div>
+
+    <div class="info-card">
+      <div class="info-card-title">
+        <span>🌉 崇德二號橋 (30m) & 四號橋 (20m) 臨時工法</span>
+      </div>
+      <div class="info-card-desc">
+        • <strong>下構「托軌 (工程梁) 工法」</strong>：利用夜間停駛架設臨時工程梁托住既有軌道，假日即可恢復雙線通車，下方同步開挖橋台與基樁。<br>
+        • <strong>上構「海側預鑄橫移工法」</strong>：利用臨海側空地預鑄預力混凝土隧道橋箱型梁，再以千斤頂橫向推移定位。<br>
+        • <strong>明/假隧道「滑模系統」</strong>：採 15° 斜坡頂版 + 廢輪胎緩衝層，以滑模連續推進縮短拆模時間。<br>
+        • <strong style="color:#fda4af;">⚡ 電子圍籬 (56K+990~57K+050)</strong>：東西線間距僅 8.5~12m，設光電電子圍籬防機具越界。
+      </div>
+    </div>
+  </aside>
+
+  <!-- =====================================================================
+       分頁 ③：蘇花安 247 萬方運碴列車與卡車轉運動態調度
+       ===================================================================== -->
+  <aside class="stage-panel" id="panel-spoil">
+    <div class="panel-header">
+      <div class="panel-eyebrow">
+        <span>STAGE 03 · SPOIL TRAIN & TRUCK DISPATCH</span>
+        <span class="badge badge-amber">247 萬鬆方鐵路南運</span>
+      </div>
+      <h2>蘇花安運碴專列與崇德站轉運動線</h2>
+      <p>蘇花安 2 號隧道北口開挖土石方由<strong>和仁站</strong>裝載（每列 <strong>12 輛平車</strong>，每日往返 6~7 趟次），利用營運空檔南運至<strong>崇德站第 1 股</strong>卸載。</p>
+    </div>
+
+    <div class="mode-grid">
+      <button class="mode-card-btn active" id="btn-spoil-init" onclick="setSpoilRoute('INITIAL')">
+        <strong>🚛 初期：站內便道 + 農路箱涵</strong>
+        <span>開工前6~18個月｜順行站區南下側便道穿箱涵北上</span>
+      </button>
+      <button class="mode-card-btn" id="btn-spoil-mid" onclick="setSpoilRoute('MIDTERM')">
+        <strong>🌉 中期：跨鐵路便橋 / 5號橋</strong>
+        <span>6個月便橋或18個月5號橋完工｜右轉台9線北上跨鐵路</span>
+      </button>
+    </div>
+
+    <div class="info-card">
+      <div class="info-card-title">
+        <span>🚉 崇德站 (9股) & 和仁站 (15股) 股道調度配席</span>
+        <span class="badge badge-sky" id="spoil-live-badge">運碴專列運行中</span>
+      </div>
+      <div class="info-card-desc">
+        • <strong>崇德站 第 1 股（山側）</strong>：蘇花安專用卸碴軌，每列 12 輛平車實櫃卸移與空櫃裝車耗時 <strong>1 小時</strong>（每日作業 6~8 小時）。<br>
+        • <strong>崇德站 第 2 股（臨時軌）</strong>：供運碴車調度，<strong>夜間停放空平車編組</strong>，俾利隔日清晨立即北上和仁站裝土。<br>
+        • <strong>崇德站 第 4~7 股 & 和仁站 第 6~9 股</strong>：平日單線施工期間，作為臺鐵上下行客運列車臨停等待交會區。
+      </div>
+    </div>
+
+    <div class="info-card">
+      <div class="info-card-title">
+        <span>♻️ 土方就近媒合回填與交通衝擊減輕</span>
+      </div>
+      <div class="info-card-desc" id="spoil-route-narrative">
+        <strong>當前顯示【初期轉運動線】</strong>：卡車於崇德站第 1 股裝載後，順行沿站區內鐵路南下側便道 ➔ 穿越地方農路箱涵左轉 ➔ 沿鐵路北上側進入蘇花安工區便道。<br><br>
+        💡 <em>點選上方「中期：跨鐵路便橋 / 5號橋」可切換查看優先施作板下守望哨跨鐵路臨時便橋（工期 6 個月）後，免除穿越崇德街區與崇德國小之安全動線！</em>
+      </div>
+    </div>
+  </aside>
+
+  <!-- =====================================================================
+       分頁 ④：117～125 年監造工作進度甘特圖聯動面板 (僅在分頁4展開)
+       ===================================================================== -->
+  <section class="gantt-stage-panel" id="panel-gantt">
+    <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px;">
+      <div>
+        <span style="font-size:11px; font-weight:700; color:var(--accent-sky); letter-spacing:1px;">STAGE 04 · 117~125 GANTT TIMELINE SYNC</span>
+        <h3 style="font-size:17px; color:#fff; margin-top:2px;">📅 圖 2.7-4 監造工作進度期程與地圖動態推演 (117Q1 ～ 125Q4)</h3>
+      </div>
+
+      <div style="display:flex; align-items:center; gap:12px; flex:1; max-width:560px;">
+        <button class="pill-btn active" id="btn-auto-quarter" onclick="toggleTimelinePlay()">▶ 自動推演年份</button>
+        <span style="font-size:12px; color:var(--text-muted);">117Q1</span>
+        <input type="range" id="quarter-slider" min="0" max="35" value="8" style="flex:1; accent-color:var(--accent-sky); cursor:pointer;" oninput="onQuarterChange(this.value)" />
+        <span style="font-size:12px; color:var(--text-muted);">125Q4</span>
+        <span class="badge badge-amber" id="quarter-badge" style="font-size:13px; padding:5px 14px;">119年 Q1</span>
+      </div>
+
+      <div style="font-size:13px; font-weight:700; color:#fde047;" id="quarter-stage-summary">
+        當前階段：東正線明/假隧道與崇德車站同步施工中（西線單線營運）
+      </div>
+    </div>
+
+    <div class="gantt-scroll-area">
+      <table class="gantt-table" id="gantt-table"></table>
+    </div>
+  </section>
+
+  <!-- =====================================================================
+       底部中央懸浮控制膠囊 (空間快速導航 + 動畫慢速/暫停控制器)
+       ===================================================================== -->
+  <div class="bottom-floating-dock">
+    <div class="dock-group">
+      <span class="dock-label">📍 快速鏡頭：</span>
+      <button class="dock-btn" onclick="focusLocation('ALL')">全線總覽</button>
+      <button class="dock-btn" onclick="focusLocation('HEREN')">和仁站 (運碴起點)</button>
+      <button class="dock-btn" onclick="focusLocation('K53')">K53 小清水溪橋</button>
+      <button class="dock-btn active" id="dock-k56" onclick="focusLocation('K56_NORTH')">K56 明/假隧道與便橋</button>
+      <button class="dock-btn" onclick="focusLocation('CHONGDE')">崇德站 (卸碴/跨站)</button>
+    </div>
+
+    <div class="dock-divider"></div>
+
+    <div class="dock-group">
+      <span class="dock-label">⏱️ 車輛動畫速度：</span>
+      <button class="dock-btn" id="spd-0" onclick="setAnimSpeed(0)">⏸ 暫停定格</button>
+      <button class="dock-btn" id="spd-05" onclick="setAnimSpeed(0.5)">🐢 0.5x 慢速講解</button>
+      <button class="dock-btn active" id="spd-1" onclick="setAnimSpeed(1)">▶ 1x 舒適標準</button>
+      <button class="dock-btn" id="spd-2" onclick="setAnimSpeed(2)">⏩ 2x 加速</button>
+    </div>
+  </div>
+
+  <!-- Google Apps Script 部署教學模態框 -->
+  <div class="modal-backdrop" id="gas-modal">
+    <div class="modal-box">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+        <h3 style="font-size:18px; color:var(--accent-sky);">☁️ 部署至 Google Apps Script (Google 空間 / Google Sites)</h3>
+        <button class="pill-btn" onclick="toggleGasModal(false)">✕ 關閉視窗</button>
+      </div>
+      <p style="font-size:13.5px; color:var(--text-secondary);">
+        本互動網頁採用單一檔案無相依架構，已自動保存在您工作區的 <code>gas_webapp/index.html</code> 與 <code>gas_webapp/Code.gs</code>：
+      </p>
+      <div class="code-block">function doGet(e) {
+  return HtmlService.createHtmlOutputFromFile('index')
+    .setTitle('臺鐵北迴線 K53 & K56 改建工程｜施工臨時方案與運碴調度動態地理戰情室')
+    .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL)
+    .addMetaTag('viewport', 'width=device-width, initial-scale=1.0');
+}</div>
+      <ol style="font-size:13px; color:var(--text-secondary); padding-left:20px; margin-top:10px;">
+        <li>開啟 <a href="https://script.google.com" target="_blank" style="color:var(--accent-sky);">script.google.com</a> 建立新專案，貼上上方 <code>Code.gs</code>。</li>
+        <li>新增名為 <code>index</code> 的 HTML 檔案，將 <code>gas_webapp/index.html</code> 貼入。</li>
+        <li>點選右上角「部署」➔「新增部署作業」➔「網頁應用程式」，即可取得專屬互動網址貼入 Google Space！</li>
+      </ol>
+    </div>
+  </div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script>
+    // =========================================================================
+    // 1. 初始化全幅 Google Maps 底圖 (預設將視野中心微調，避開左側懸浮卡片)
+    // =========================================================================
+    const map = L.map('map', {
+      center: [24.1810, 121.6515],
+      zoom: 16,
+      zoomControl: false
+    });
+
+    L.control.zoom({ position: 'bottomright' }).addTo(map);
+
+    const baseTiles = {
+      hybrid: L.tileLayer('https://mt1.google.com/vt/lyrs=y&hl=zh-TW&x={x}&y={y}&z={z}', { maxZoom: 20 }),
+      terrain: L.tileLayer('https://mt1.google.com/vt/lyrs=p&hl=zh-TW&x={x}&y={y}&z={z}', { maxZoom: 20 })
+    };
+    baseTiles.hybrid.addTo(map);
+
+    function switchBaseMap(mode) {
+      Object.values(baseTiles).forEach(l => map.removeLayer(l));
+      baseTiles[mode].addTo(map);
+      document.getElementById('btn-map-hybrid').classList.toggle('active', mode === 'hybrid');
+      document.getElementById('btn-map-terrain').classList.toggle('active', mode === 'terrain');
+    }
+
+    // =========================================================================
+    // 2. 四大戰情分頁切換邏輯 (不把所有面板擠在一起，切換分頁自動帶領鏡頭)
+    // =========================================================================
+    function switchTab(tabId) {
+      ['overview', 'tracks', 'spoil', 'gantt'].forEach(id => {
+        document.getElementById('tab-' + id).classList.toggle('active', id === tabId);
+      });
+
+      document.getElementById('panel-overview').classList.toggle('active', tabId === 'overview');
+      document.getElementById('panel-tracks').classList.toggle('active', tabId === 'tracks');
+      document.getElementById('panel-spoil').classList.toggle('active', tabId === 'spoil');
+      document.getElementById('panel-gantt').classList.toggle('active', tabId === 'gantt');
+
+      // 根據分頁自動平滑切換最佳觀賞視角
+      if (tabId === 'overview') {
+        focusLocation('K56_NORTH');
+      } else if (tabId === 'tracks') {
+        map.flyTo([24.1808, 121.6518], 16, { duration: 1.2 });
+      } else if (tabId === 'spoil') {
+        map.flyTo([24.1690, 121.6505], 16, { duration: 1.2 });
+      } else if (tabId === 'gantt') {
+        map.flyTo([24.1840, 121.6560], 14, { duration: 1.2 });
+      }
+    }
+
+    // =========================================================================
+    // 3. 空間座標定義 (和仁站 ~ K53 ~ K56 ~ 崇德站)
+    // =========================================================================
+    const COORDS = {
+      HEREN_STATION: [24.2448, 121.6712],
+      QINGSHUI_S: [24.2008, 121.6635],
+      K53_BRIDGE: [24.1986, 121.6632],
+      CHONGDE_N: [24.1965, 121.6629],
+      CHONGDE_S: [24.1846, 121.6552],      // STA 56+440
+      BRIDGE_2: [24.1828, 121.6548],       // K56+620 崇德二號橋
+      DRAIN_56K816: [24.1806, 121.6544],   // 56K+816 洩水槽分界
+      BRIDGE_4: [24.1790, 121.6541],       // 崇德四號橋
+      EFENCE: [24.1780, 121.6539],         // 56K+990 電子圍籬
+      K57_050: [24.1773, 121.6538],        // STA 57+050 假隧道南端
+      BRIDGE_5: [24.1762, 121.6536],       // 崇德五號橋下海灘便道
+      CHONGDE_OLD: [24.1695, 121.6524],    // 崇德站第1/2股卸碴與4~7股待避
+      CHONGDE_NEW: [24.1678, 121.6521],    // 新建崇德跨站式車站
+      SUHUA_FILL: [24.1635, 121.6548]
+    };
+
+    const westTrackCoords = [
+      COORDS.HEREN_STATION,
+      [24.2220, 121.6670],
+      COORDS.QINGSHUI_S,
+      COORDS.K53_BRIDGE,
+      COORDS.CHONGDE_N,
+      COORDS.CHONGDE_S,
+      COORDS.BRIDGE_2,
+      COORDS.DRAIN_56K816,
+      COORDS.BRIDGE_4,
+      COORDS.K57_050,
+      COORDS.BRIDGE_5,
+      COORDS.CHONGDE_OLD,
+      COORDS.CHONGDE_NEW,
+      [24.1620, 121.6512]
+    ];
+
+    const eastTrackCoords = westTrackCoords.map(p => [p[0], p[1] + 0.00038]);
+
+    // 繪製西正線與東正線
+    const westLine = L.polyline(westTrackCoords, { color: '#10b981', weight: 6, opacity: 0.9 }).addTo(map);
+    const eastLine = L.polyline(eastTrackCoords, { color: '#f97316', weight: 6, dashArray: '10, 8', opacity: 0.9 }).addTo(map);
+
+    // 繪製東施工便道 (含排樁与 70m/30m 鋼便橋) 與西施工便道 (50m/30m 鋼便橋)
+    L.polyline([
+      [24.1846, 121.6562],
+      [24.1828, 121.6558],
+      [24.1806, 121.6554],
+      [24.1790, 121.6551],
+      [24.1762, 121.6546]
+    ], { color: '#38bdf8', weight: 4, dashArray: '6, 6' })
+      .bindTooltip('🛣️ 海側東施工便道 (含 Φ1.5m 排樁、70M & 30M 鋼便橋、五號橋下100m備援便道)')
+      .addTo(map);
+
+    // 繪製西側高風險崩塌斜坡範圍 (柔和半透明紅)
+    L.polygon([
+      [24.1848, 121.6485],
+      [24.1848, 121.6534],
+      [24.1772, 121.6524],
+      [24.1772, 121.6472]
+    ], { color: '#f43f5e', fillColor: '#f43f5e', fillOpacity: 0.16, weight: 1.5, dashArray: '6,6' })
+      .bindTooltip('⚠️ K56 西側峭壁落石與岩屑崩滑高潛勢區 (15°斜坡頂版+廢輪胎緩衝防護)')
+      .addTo(map);
+
+    // 蘇花安運土卡車初期與中期路線
+    const truckRouteInitial = [
+      [24.1695, 121.6518],
+      [24.1668, 121.6514],
+      [24.1652, 121.6512],
+      [24.1652, 121.6532],
+      [24.1685, 121.6536],
+      COORDS.SUHUA_FILL
+    ];
+
+    const truckRouteMidterm = [
+      [24.1695, 121.6518],
+      [24.1712, 121.6512],
+      [24.1735, 121.6516],
+      [24.1735, 121.6542],
+      [24.1680, 121.6545],
+      COORDS.SUHUA_FILL
+    ];
+
+    const spoilTruckPolyline = L.polyline(truckRouteInitial, {
+      color: '#eab308', weight: 5, dashArray: '8, 6', opacity: 0.9
+    }).addTo(map);
+
+    // 精選地標標籤 (間距拉開，不重疊)
+    function addLandmark(latlng, text, cls, targetZone) {
+      L.marker(latlng, {
+        icon: L.divIcon({
+          className: '',
+          html: `<div class="landmark-pin ${cls}" onclick="focusLocation('${targetZone}')">${text}</div>`,
+          iconAnchor: [0, 14]
+        })
+      }).addTo(map);
+    }
+
+    addLandmark([24.2448, 121.6720], '🚉 和仁站｜6~9股單線交會待避 & 蘇花安運碴起點', 'pin-amber', 'HEREN');
+    addLandmark([24.1986, 121.6640], '🌊 K53 小清水溪橋｜40m單跨不落墩 + 石公溪整治 + 洞口明隧道', '', 'K53');
+    addLandmark([24.1832, 121.6565], '🏗️ K56 東一/西一工區｜346m明假隧道 + 崇德二號橋30m橫移托軌 + 70M/50M鋼便橋', 'pin-amber', 'K56_NORTH');
+    addLandmark([24.1806, 121.6561], '💧 56K+816 洩水槽｜南北一、二工區分界點', '', 'K56_NORTH');
+    addLandmark([24.1788, 121.6558], '🛡️ K56 東二/西二工區｜214m假隧道 + 崇德四號橋20m + 30M鋼便橋', 'pin-emerald', 'K56_SOUTH');
+    addLandmark([24.1774, 121.6555], '⚡ 56K+990 電子圍籬 (雙線間距8.5~12m) & 山側101m擋牆', 'pin-rose', 'K56_SOUTH');
+    addLandmark([24.1696, 121.6536], '🪨 崇德站｜第1股卸碴(12平車/1hr) ・ 第2股臨時軌 ・ 4~7股臨停待避', 'pin-amber', 'CHONGDE');
+    addLandmark([24.1674, 121.6534], '🚉 新建崇德跨站式車站｜南移避險・東側鋼構預組・夜間4hr吊裝', 'pin-violet', 'CHONGDE');
+
+    function focusLocation(loc) {
+      if (loc === 'ALL') map.flyTo([24.2050, 121.6580], 13, { duration: 1.2 });
+      if (loc === 'HEREN') map.flyTo([24.2448, 121.6680], 15, { duration: 1.2 });
+      if (loc === 'K53') map.flyTo([24.1986, 121.6605], 16, { duration: 1.2 });
+      if (loc === 'K56_NORTH') map.flyTo([24.1818, 121.6518], 16, { duration: 1.2 });
+      if (loc === 'K56_SOUTH') map.flyTo([24.1782, 121.6515], 16, { duration: 1.2 });
+      if (loc === 'CHONGDE') map.flyTo([24.1685, 121.6502], 16, { duration: 1.2 });
+    }
+
+    // =========================================================================
+    // 4. 慢速、具敘事感的列車與運碴車動態引擎 (附帶即時文字膠囊，一眼看懂在做什麼)
+    // =========================================================================
+    let currentOpMode = 'WEEKDAY_EAST';
+    let currentSpoilMode = 'INITIAL';
+    let speedMultiplier = 1; // 0 = 暫停, 0.5 = 慢速, 1 = 標準舒適, 2 = 加速
+
+    function setAnimSpeed(spd) {
+      speedMultiplier = spd;
+      ['0', '05', '1', '2'].forEach(k => document.getElementById('spd-' + k).classList.remove('active'));
+      const btnKey = (spd === 0.5) ? '05' : String(spd);
+      document.getElementById('spd-' + btnKey).classList.add('active');
+    }
+
+    function setOperationMode(mode) {
+      currentOpMode = mode;
+      ['east', 'west', 'holiday', 'night'].forEach(k => document.getElementById('btn-op-' + k).classList.remove('active'));
+
+      const pill = document.getElementById('track-mode-pill');
+      const statusTxt = document.getElementById('sim-status-text');
+      const barWest = document.getElementById('bar-west');
+      const barEast = document.getElementById('bar-east');
+      const tagWest = document.getElementById('tag-west');
+      const tagEast = document.getElementById('tag-east');
+
+      if (mode === 'WEEKDAY_EAST') {
+        document.getElementById('btn-op-east').classList.add('active');
+        pill.innerText = '平日：東施西營';
+        statusTxt.innerText = '西正線單線雙向運轉（崇德4~7股待避）';
+        barWest.className = 'track-bar flow-green';
+        barEast.className = 'track-bar work-amber';
+        tagWest.innerText = '單線雙向營運';
+        tagEast.innerText = '封鎖施工(滑模/橫移)';
+        westLine.setStyle({ color: '#10b981', dashArray: null });
+        eastLine.setStyle({ color: '#f97316', dashArray: '10, 8' });
+      } else if (mode === 'WEEKDAY_WEST') {
+        document.getElementById('btn-op-west').classList.add('active');
+        pill.innerText = '平日：西施東營';
+        statusTxt.innerText = '東正線新隧道通車・西正線封鎖施工';
+        barWest.className = 'track-bar work-amber';
+        barEast.className = 'track-bar flow-green';
+        tagWest.innerText = '封鎖施工中';
+        tagEast.innerText = '單線雙向營運';
+        westLine.setStyle({ color: '#a855f7', dashArray: '10, 8' });
+        eastLine.setStyle({ color: '#10b981', dashArray: null });
+      } else if (mode === 'HOLIDAY_DUAL') {
+        document.getElementById('btn-op-holiday').classList.add('active');
+        pill.innerText = '假日：恢復雙線';
+        statusTxt.innerText = '假日前機具退縮・托軌工程梁承載雙線通車';
+        barWest.className = 'track-bar flow-green';
+        barEast.className = 'track-bar flow-green';
+        tagWest.innerText = '北上正線通行';
+        tagEast.innerText = '南下正線通行';
+        westLine.setStyle({ color: '#10b981', dashArray: null });
+        eastLine.setStyle({ color: '#10b981', dashArray: null });
+      } else if (mode === 'NIGHT_WINDOW') {
+        document.getElementById('btn-op-night').classList.add('active');
+        pill.innerText = '夜間斷電封鎖 (4hr)';
+        statusTxt.innerText = '00:00~04:00 跨軌鋼構吊裝 & 運碴空車留置第2股';
+        barWest.className = 'track-bar work-amber';
+        barEast.className = 'track-bar work-amber';
+        tagWest.innerText = '夜間斷電吊裝';
+        tagEast.innerText = '夜間斷電吊裝';
+        westLine.setStyle({ color: '#38bdf8', dashArray: '4, 8' });
+        eastLine.setStyle({ color: '#38bdf8', dashArray: '4, 8' });
+      }
+    }
+
+    function setSpoilRoute(routeMode) {
+      currentSpoilMode = routeMode;
+      document.getElementById('btn-spoil-init').classList.toggle('active', routeMode === 'INITIAL');
+      document.getElementById('btn-spoil-mid').classList.toggle('active', routeMode === 'MIDTERM');
+      const narrative = document.getElementById('spoil-route-narrative');
+
+      if (routeMode === 'INITIAL') {
+        spoilTruckPolyline.setLatLngs(truckRouteInitial);
+        spoilTruckPolyline.setStyle({ color: '#eab308' });
+        narrative.innerHTML = '<strong>當前顯示【初期轉運動線】</strong>：卡車於崇德站第 1 股裝載後，順行沿站區內鐵路南下側便道 ➔ 穿越地方農路箱涵左轉 ➔ 沿鐵路北上側進入蘇花安工區便道。';
+      } else {
+        spoilTruckPolyline.setLatLngs(truckRouteMidterm);
+        spoilTruckPolyline.setStyle({ color: '#10b981' });
+        narrative.innerHTML = '<strong>當前顯示【中期優化動線】</strong>：優先施作<strong>板下守望哨跨鐵路臨時便橋（6個月）</strong>或<strong>蘇花安 5 號橋第一單元（18個月）</strong>完成後，卡車改由台 9 線北上右轉跨越鐵路直入工區便道，徹底避開崇德街區與國小！';
+      }
+    }
+
+    function interpolatePath(path, t) {
+      const clamped = Math.max(0, Math.min(1, t));
+      const totalSegs = path.length - 1;
+      const exact = clamped * totalSegs;
+      const idx = Math.min(Math.floor(exact), totalSegs - 1);
+      const frac = exact - idx;
+      return [
+        path[idx][0] + (path[idx + 1][0] - path[idx][0]) * frac,
+        path[idx][1] + (path[idx + 1][1] - path[idx][1]) * frac
+      ];
+    }
+
+    // 建立帶有文字說明的動態膠囊標記
+    const southTrainMarker = L.marker(COORDS.CHONGDE_S, {
+      icon: L.divIcon({
+        className: '',
+        html: '<div class="vehicle-pill vehicle-pill-pax" id="pill-south-train">🚄 南下客車｜西正線通行中</div>',
+        iconAnchor: [70, 14]
+      })
+    }).addTo(map);
+
+    const northTrainMarker = L.marker(COORDS.CHONGDE_OLD, {
+      icon: L.divIcon({
+        className: '',
+        html: '<div class="vehicle-pill vehicle-pill-pax" id="pill-north-train">🚄 北上客車｜崇德4~7股待避</div>',
+        iconAnchor: [70, 14]
+      })
+    }).addTo(map);
+
+    const spoilTrainMarker = L.marker(COORDS.CHONGDE_OLD, {
+      icon: L.divIcon({
+        className: '',
+        html: '<div class="vehicle-pill vehicle-pill-spoil" id="pill-spoil-train">🪨 蘇花安運碴專列 (12平車)</div>',
+        iconAnchor: [80, 14]
+      })
+    }).addTo(map);
+
+    const spoilTruckMarker = L.marker(COORDS.CHONGDE_OLD, {
+      icon: L.divIcon({
+        className: '',
+        html: '<div class="vehicle-pill vehicle-pill-truck" id="pill-spoil-truck">🚛 運碴卡車隊｜往蘇花安便道</div>',
+        iconAnchor: [75, 12]
+      })
+    }).addTo(map);
+
+    // 慢速且平滑的動畫迴圈 (比前一版放慢 6 倍，可清楚觀察交會與裝卸)
+    let masterClock = 0.42; // 初始直接從 K56 路段中央開始，方便打開網頁就看到列車
+    function animateScene() {
+      // 基準步進 0.00035 (約 48 秒走完全程，從容優雅)
+      masterClock += 0.00035 * speedMultiplier;
+      const cycle = masterClock % 1;
+
+      const southEl = document.getElementById('pill-south-train');
+      const northEl = document.getElementById('pill-north-train');
+      const spoilEl = document.getElementById('pill-spoil-train');
+      const truckEl = document.getElementById('pill-spoil-truck');
+
+      if (currentOpMode === 'NIGHT_WINDOW') {
+        southTrainMarker.setLatLng(COORDS.HEREN_STATION);
+        northTrainMarker.setLatLng(COORDS.CHONGDE_NEW);
+        spoilTrainMarker.setLatLng([24.1695, 121.6520]);
+        if (southEl) southEl.innerText = '🌙 夜間封鎖｜客車停駛';
+        if (northEl) northEl.innerText = '🏗️ 崇德站跨軌鋼構夜間吊裝中';
+        if (spoilEl) spoilEl.innerText = '🪨 空平車夜間留置崇德站第2股';
+      } else {
+        const southTrack = (currentOpMode === 'WEEKDAY_EAST') ? westTrackCoords : eastTrackCoords;
+        const northTrack = (currentOpMode === 'WEEKDAY_WEST') ? eastTrackCoords : westTrackCoords;
+
+        let southT = cycle;
+        let northT = 1 - ((cycle + 0.45) % 1);
+
+        if (currentOpMode !== 'HOLIDAY_DUAL') {
+          // 平日單線雙向：當南下客車行經 K53~K56 單線區間 (0.25~0.78) 時，北上客車優雅停靠崇德站 4~7 股待避
+          if (southT > 0.25 && southT < 0.78) {
+            northT = 0.85;
+            if (northEl) northEl.innerText = '🚄 北上客車｜於崇德站4~7股待避交會';
+          } else {
+            if (northEl) northEl.innerText = '🚄 北上客車｜單線區間北上通行中';
+          }
+          if (southEl) {
+            southEl.innerText = (currentOpMode === 'WEEKDAY_EAST')
+              ? '🚄 南下客車｜西正線單線運行'
+              : '🚄 南下客車｜東正線新隧道運行';
+          }
+        } else {
+          if (southEl) southEl.innerText = '🚄 南下客車｜假日雙線(托軌承載)';
+          if (northEl) northEl.innerText = '🚄 北上客車｜假日雙線全速運行';
+        }
+
+        southTrainMarker.setLatLng(interpolatePath(southTrack, southT));
+        northTrainMarker.setLatLng(interpolatePath(northTrack, northT));
+
+        // 蘇花安運碴列車 (和仁站 <-> 崇德站第1股)
+        const spoilTrack = (currentOpMode === 'WEEKDAY_WEST') ? eastTrackCoords : westTrackCoords;
+        const pingPong = Math.abs(((cycle * 1.4) % 2) - 1);
+        const spoilT = Math.min(0.86, Math.max(0.02, pingPong));
+        spoilTrainMarker.setLatLng(interpolatePath(spoilTrack, spoilT));
+
+        if (spoilEl) {
+          if (spoilT > 0.80) {
+            spoilEl.innerText = '🪨 運碴專列｜崇德站第1股卸櫃中 (1hr)';
+            document.getElementById('spoil-live-badge').innerText = '崇德站第1股卸櫃中';
+          } else if (spoilT < 0.08) {
+            spoilEl.innerText = '🪨 運碴專列｜和仁站裝載土石 (12平車)';
+            document.getElementById('spoil-live-badge').innerText = '和仁站裝載中';
+          } else {
+            spoilEl.innerText = '🪨 蘇花安運碴專列｜南運往崇德第1股';
+            document.getElementById('spoil-live-badge').innerText = '鐵路南運進行中';
+          }
+        }
+      }
+
+      // 運碴卡車沿初期或中期路線慢速行駛
+      const activeTruckPath = (currentSpoilMode === 'INITIAL') ? truckRouteInitial : truckRouteMidterm;
+      const truckT = (masterClock * 2.2) % 1;
+      spoilTruckMarker.setLatLng(interpolatePath(activeTruckPath, truckT));
+      if (truckEl) {
+        truckEl.innerText = (currentSpoilMode === 'INITIAL')
+          ? '🚛 運碴卡車｜初期：經農路箱涵轉運'
+          : '🚛 運碴卡車｜中期：經跨鐵路便橋轉運';
+      }
+
+      requestAnimationFrame(animateScene);
+    }
+    requestAnimationFrame(animateScene);
+
+    // =========================================================================
+    // 5. 117~125 年甘特圖動態聯動 (圖 2.7-4)
+    // =========================================================================
+    const YEARS = [117, 118, 119, 120, 121, 122, 123, 124, 125];
+    const GANTT_TASKS = [
+      { name: '1. 施工前準備工作', start: 2, end: 5, color: '#64748b', loc: 'ALL' },
+      { name: '2. 施工便道(橋)施作 (含排樁)', start: 3, end: 6, color: '#10b981', loc: 'K56_NORTH' },
+      { name: '3. 計畫書審查', start: 2, end: 5, color: '#94a3b8', loc: 'ALL' },
+      { name: '4. 東一工區施工 (346m+70M鋼便橋)', start: 4, end: 13, color: '#f97316', loc: 'K56_NORTH' },
+      { name: '5. 東二工區施工 (214m+30M鋼便橋)', start: 5, end: 13, color: '#fb923c', loc: 'K56_SOUTH' },
+      { name: '6. 東正線軌道及系統施工', start: 13, end: 16, color: '#f59e0b', loc: 'K56_NORTH' },
+      { name: '7. 東正線交付作業 (含西線拆線12月)', start: 16, end: 19, color: '#eab308', loc: 'K56_NORTH' },
+      { name: '8. K53防洪整治、坡面保護及告警', start: 5, end: 11, color: '#38bdf8', loc: 'K53' },
+      { name: '9. 崇德車站新設跨站式站體 (34月)', start: 6, end: 17, color: '#ec4899', loc: 'CHONGDE' },
+      { name: '10. 西一工區施工 (346m+50M鋼便橋)', start: 20, end: 26, color: '#a855f7', loc: 'K56_NORTH' },
+      { name: '11. 西二工區施工 (214m+30M鋼便橋)', start: 20, end: 25, color: '#c084fc', loc: 'K56_SOUTH' },
+      { name: '12. 西正線軌道及系統施工', start: 27, end: 30, color: '#8b5cf6', loc: 'K56_NORTH' },
+      { name: '13. 竣工驗收與雙線全面開通', start: 31, end: 35, color: '#10b981', loc: 'ALL' }
+    ];
+
+    function renderGantt(activeQ) {
+      let html = '<thead><tr><th class="task-col" rowspan="2">監造工作項目 (點擊跳轉該期程)</th>';
+      YEARS.forEach(y => { html += `<th colspan="4" style="color:#38bdf8; background:#0b1120;">${y}年</th>`; });
+      html += '</tr><tr>';
+      for (let i = 0; i < 36; i++) {
+        html += `<th class="${i === activeQ ? 'gantt-curr-col' : ''}" style="font-size:10px; color:#94a3b8;">Q${(i % 4) + 1}</th>`;
+      }
+      html += '</tr></thead><tbody>';
+
+      GANTT_TASKS.forEach(t => {
+        const running = (activeQ >= t.start && activeQ <= t.end);
+        html += `<tr class="gantt-row ${running ? 'active-row' : ''}" onclick="jumpQuarter(${t.start}, '${t.loc}')">`;
+        html += `<td class="task-col">${running ? '▶ ' : ''}${t.name}</td>`;
+        for (let q = 0; q < 36; q++) {
+          const inBar = (q >= t.start && q <= t.end);
+          html += `<td class="${q === activeQ ? 'gantt-curr-col' : ''}">`;
+          if (inBar) html += `<div class="gantt-bar" style="background:${t.color};"></div>`;
+          html += '</td>';
+        }
+        html += '</tr>';
+      });
+      html += '</tbody>';
+      document.getElementById('gantt-table').innerHTML = html;
+    }
+
+    function onQuarterChange(val) {
+      const qIdx = parseInt(val, 10);
+      const yr = 117 + Math.floor(qIdx / 4);
+      const q = (qIdx % 4) + 1;
+      document.getElementById('quarter-badge').innerText = `${yr}年 Q${q}`;
+      renderGantt(qIdx);
+
+      const summary = document.getElementById('quarter-stage-summary');
+      if (qIdx <= 6) {
+        setOperationMode('WEEKDAY_EAST');
+        setSpoilRoute('INITIAL');
+        summary.innerText = `${yr}Q${q}｜前置與便道期：施作海側排樁與70M/50M/30M鋼便橋，蘇花安採初期箱涵動線`;
+      } else if (qIdx <= 15) {
+        setOperationMode('WEEKDAY_EAST');
+        setSpoilRoute('MIDTERM');
+        summary.innerText = `${yr}Q${q}｜東正線主力期：東一/東二滑模與橫移施工（西線營運），蘇花安改走跨鐵路便橋`;
+      } else if (qIdx <= 19) {
+        setOperationMode('NIGHT_WINDOW');
+        setSpoilRoute('MIDTERM');
+        summary.innerText = `${yr}Q${q}｜軌道切換交付期(12月)：東正線完工交付、西線拆線，崇德跨站鋼構夜間吊裝`;
+      } else if (qIdx <= 30) {
+        setOperationMode('WEEKDAY_WEST');
+        setSpoilRoute('MIDTERM');
+        summary.innerText = `${yr}Q${q}｜西正線主力期：列車行駛完工之東正線新隧道，西一/西二工區快速施作`;
+      } else {
+        setOperationMode('HOLIDAY_DUAL');
+        setSpoilRoute('MIDTERM');
+        summary.innerText = `${yr}Q${q}｜竣工驗收：K53與K56明/假隧道、單跨預力隧道橋與崇德新站全面雙線通車！`;
+      }
+    }
+
+    function jumpQuarter(qIdx, loc) {
+      document.getElementById('quarter-slider').value = qIdx;
+      onQuarterChange(qIdx);
+      if (loc) focusLocation(loc);
+    }
+
+    let playTimer = null;
+    function toggleTimelinePlay() {
+      const btn = document.getElementById('btn-auto-quarter');
+      if (playTimer) {
+        clearInterval(playTimer);
+        playTimer = null;
+        btn.innerText = '▶ 自動推演年份';
+      } else {
+        btn.innerText = '⏸ 暫停推演';
+        playTimer = setInterval(() => {
+          const slider = document.getElementById('quarter-slider');
+          const next = (parseInt(slider.value, 10) + 1) % 36;
+          slider.value = next;
+          onQuarterChange(next);
+        }, 2000);
+      }
+    }
+
+    function toggleGasModal(open) {
+      document.getElementById('gas-modal').classList.toggle('open', open);
+    }
+
+    // 預設初始化為 119年 Q1
+    onQuarterChange(8);
+  </script>
+</body>
+</html>
